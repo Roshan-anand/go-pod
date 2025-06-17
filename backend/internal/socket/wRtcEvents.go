@@ -2,7 +2,9 @@ package socket
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 
 	"github.com/Roshan-anand/go-pod/internal/utils"
 	"github.com/pion/webrtc/v4"
@@ -67,16 +69,30 @@ func (c *Client) offer(d *WsData[string]) {
 	})
 
 	// handeling incomming tracks
-	peerC.OnTrack(func(track *webrtc.TrackRemote, receiver *webrtc.RTPReceiver) {
-		tracks, err := webrtc.NewTrackLocalStaticRTP(track.Codec().RTPCodecCapability, c.email, track.StreamID())
+	peerC.OnTrack(func(t *webrtc.TrackRemote, receiver *webrtc.RTPReceiver) {
+		fmt.Println("tracks from ", t.ID())
+		tracks, err := webrtc.NewTrackLocalStaticRTP(t.Codec().RTPCodecCapability, c.email, t.StreamID())
 		if err != nil {
 			fmt.Println("error while creating local track:", err)
 			return
 		}
-		
-		// sendding tracks to the studio tracks channel 
+
+		// sendding tracks to the studio tracks channel
 		// this invokes the c.addTracks() goroutine
-		c.studio.tracks <- tracks 
+		// c.studio.tracks <- tracks
+
+		rtpBuf := make([]byte, 1400)
+		for {
+			i, _, readErr := t.Read(rtpBuf)
+			if readErr != nil {
+				panic(readErr)
+			}
+
+			// ErrClosedPipe means we don't have any subscribers, this is ok if no peers have connected yet
+			if _, err = tracks.Write(rtpBuf[:i]); err != nil && !errors.Is(err, io.ErrClosedPipe) {
+				panic(err)
+			}
+		}
 	})
 
 	//setting up remote description
@@ -136,15 +152,4 @@ func (c *Client) ice(d *WsData[string]) {
 	if err != nil {
 		fmt.Println("error while adding ICE candidate:", err)
 	}
-}
-
-func (c *Client) addTracks() {
-
-	for {
-		select {
-		case track := <-c.studio.tracks:
-			fmt.Println("new track from", c.email, " trackID:", track.ID())
-		}
-	}
-
 }

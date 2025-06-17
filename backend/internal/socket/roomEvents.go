@@ -2,7 +2,6 @@ package socket
 
 import (
 	"github.com/Roshan-anand/go-pod/internal/utils"
-	"github.com/pion/webrtc/v4"
 )
 
 // to create a new room
@@ -22,14 +21,10 @@ func (c *Client) createRoom(d *WsData[string]) {
 		clients: map[string]*Client{
 			email: c,
 		},
-		tracks: make(chan *webrtc.TrackLocalStaticRTP),
 	}
 	c.hub.studios[id] = studio
 	c.studio = studio
 	c.hub.mu.Unlock()
-
-	// to run a goroutine to listen for incomming tracks from this client
-	go c.addTracks()
 
 	rData := &RwsEv{
 		Event: "room:created",
@@ -66,9 +61,6 @@ func (c *Client) joinRoom(d *WsData[string]) {
 	studio.clients[email] = c
 	c.studio = studio
 	c.hub.mu.Unlock()
-	
-	// to run a goroutine to listen for incomming tracks from this client
-	go c.addTracks()
 
 	rData.Event = "room:joined"
 	rData.Data["roomID"] = roomID
