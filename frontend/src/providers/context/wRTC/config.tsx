@@ -21,20 +21,7 @@ type contextT = {
   setMyScreen: Dispatch<SetStateAction<MediaStream | null>>;
 };
 
-export const WrtcContext = createContext<contextT>({
-  peerC: null,
-  setPeerC: () => {},
-  myStream: null,
-  setMyStream: () => {},
-  remoteStreams: new Map(),
-  setRemoteStreams: () => {},
-  audioOpt: [],
-  setAudioOpt: () => {},
-  videoOpt: [],
-  setVideoOpt: () => {},
-  myScreen: null,
-  setMyScreen: () => {},
-});
+export const WrtcContext = createContext<contextT | null>(null);
 
 export const useWrtcContext = () => {
   const context = useContext(WrtcContext);

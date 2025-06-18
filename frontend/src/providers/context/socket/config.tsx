@@ -15,14 +15,7 @@ type contextT = {
   listeners: Map<string, (data: WsData) => void>;
 };
 
-export const WsContext = createContext<contextT>({
-  socket: null,
-  setSocket: () => {},
-  WsEmit: () => {},
-  WsOn: () => {},
-  WsOff: () => {},
-  listeners: new Map(),
-});
+export const WsContext = createContext<contextT | null>(null);
 
 export const useWsContext = () => {
   const context = useContext(WsContext);

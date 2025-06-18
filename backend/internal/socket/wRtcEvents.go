@@ -10,6 +10,21 @@ import (
 	"github.com/pion/webrtc/v4"
 )
 
+type proposal struct {
+	id    string
+	email string
+	kind  string
+	track *webrtc.TrackLocalStaticRTP
+}
+
+type studio struct {
+	name      string
+	clients   map[string]*Client
+	tracks    map[string]*proposal
+	sendTrack chan *webrtc.TrackLocalStaticRTP
+	sendProp  chan *proposal
+}
+
 // configuration for webrtc
 // contains the STUN server used for NAT traversal
 // and the ICE candidate pool size
@@ -68,29 +83,31 @@ func (c *Client) offer(d *WsData[string]) {
 		})
 	})
 
-	// handeling incomming tracks
+	// handling incoming tracks
 	peerC.OnTrack(func(t *webrtc.TrackRemote, receiver *webrtc.RTPReceiver) {
-		fmt.Println("tracks from ", t.ID())
-		tracks, err := webrtc.NewTrackLocalStaticRTP(t.Codec().RTPCodecCapability, c.email, t.StreamID())
+		fmt.Println("tracks from ", c.email, t.ID())
+		lTrack, err := webrtc.NewTrackLocalStaticRTP(t.Codec().RTPCodecCapability, t.ID(), t.StreamID())
 		if err != nil {
 			fmt.Println("error while creating local track:", err)
 			return
 		}
 
-		// sendding tracks to the studio tracks channel
-		// this invokes the c.addTracks() goroutine
-		// c.studio.tracks <- tracks
+		// sending tracks to the studio tracks channel
+		// for organizing and distributing tracks
+		c.studio.sendTrack <- lTrack
 
 		rtpBuf := make([]byte, 1400)
 		for {
 			i, _, readErr := t.Read(rtpBuf)
 			if readErr != nil {
-				panic(readErr)
+				fmt.Println("error while reading track:", readErr)
+				break
 			}
 
 			// ErrClosedPipe means we don't have any subscribers, this is ok if no peers have connected yet
-			if _, err = tracks.Write(rtpBuf[:i]); err != nil && !errors.Is(err, io.ErrClosedPipe) {
-				panic(err)
+			if _, err = lTrack.Write(rtpBuf[:i]); err != nil && !errors.Is(err, io.ErrClosedPipe) {
+				fmt.Println("error while writing track:", err)
+				break
 			}
 		}
 	})
@@ -152,4 +169,67 @@ func (c *Client) ice(d *WsData[string]) {
 	if err != nil {
 		fmt.Println("error while adding ICE candidate:", err)
 	}
+}
+
+// to handle proposal
+func (c *Client) proposal(d *WsData[string]) {
+	id := (*d)["id"]
+	kind := (*d)["kind"]
+
+	fmt.Println("proposal for ", id, kind)
+
+	prop := &proposal{
+		id:    id,
+		email: c.email,
+		kind:  kind,
+	}
+	c.studio.sendProp <- prop
+}
+
+// it sets a unique reference for each proposal
+func (s *studio) studioTracksDistribution(prop *proposal) {
+	id := prop.email + prop.kind
+	s.tracks[id] = prop
+	fmt.Println("proposal ready", prop.email, prop.kind, prop.id, prop.track.ID())
+}
+
+// to organize incoming tracks and proposals
+func (s *studio) studioTracksOrg() {
+
+	tracks := make(map[string]*proposal)
+
+	// setting up of new proposal for tracks
+	// if tracks exists, update to it's respective track
+	go func() {
+		for {
+			prop := <-s.sendProp
+			if t, ok := tracks[prop.id]; ok {
+				t.email = prop.email
+				t.kind = prop.kind
+				t.track = prop.track
+				s.studioTracksDistribution(t)
+				delete(tracks, prop.id)
+			} else {
+				tracks[prop.id] = prop
+			}
+		}
+	}()
+
+	// updating the proposal with it's respective track
+	go func() {
+		for {
+			track := <-s.sendTrack
+			if t, ok := tracks[track.ID()]; ok {
+				t.track = track
+				s.studioTracksDistribution(t)
+				delete(tracks, track.ID())
+			} else {
+				tracks[track.ID()] = &proposal{
+					id:    track.ID(),
+					track: track,
+				}
+			}
+		}
+	}()
+
 }

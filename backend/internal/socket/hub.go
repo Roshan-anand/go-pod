@@ -3,15 +3,7 @@ package socket
 import (
 	"fmt"
 	"sync"
-
-	"github.com/pion/webrtc/v4"
 )
-
-type studio struct {
-	name string
-	clients map[string]*Client
-	tracks chan *webrtc.TrackLocalStaticRTP
-}
 
 type Hub struct {
 	client     map[*Client]bool

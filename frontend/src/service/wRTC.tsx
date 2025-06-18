@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import { useWsContext } from "@/providers/context/socket/config";
 import { useWrtcContext } from "@/providers/context/wRTC/config";
@@ -26,63 +26,60 @@ const useWrtcService = () => {
 
   const bufferedIce = useRef<RTCIceCandidateInit[]>([]);
 
-  //handle RTCpeer events
-  const setPeerEv = useCallback(
-    (peer: RTCPeerConnection) => {
-      if (!socket) return;
-
-      //to send ICE candiate infomation to the connected peer
-      peer.onicecandidate = (e) => {
-        const candidate = e.candidate;
-        if (!candidate) return;
-
-        WsEmit({
-          event: "ice",
-          data: {
-            ice: JSON.stringify(candidate),
-          },
-        });
-      };
-
-      //to track media streams of the connected peer
-      //   peer.ontrack = (e) => {
-      //     const stream = e.streams[0];
-      //     setRemoteStreams((prev) => {
-      //       prev.set(email, stream);
-      //       return new Map(prev);
-      //     });
-      //   };
-
-      //to send user's media stream to the connected peer
-      if (myStream) {
-        myStream.getTracks().forEach((track) => {
-          console.log("sending track");
-          peer.addTrack(track, myStream);
-        });
-      }
-
-      //to handle peer disconnection
-      peer.onconnectionstatechange = () => {
-        const state = peer.connectionState;
-        if (state !== "disconnected") return;
-
-        peer.close();
-        setPeerC(null);
-        // setRemoteStreams((prev) => {
-        //   prev.delete(email);
-        //   return new Map(prev);
-        // });
-        toast.error(` disconnected from the room`);
-      };
-    },
-    [myStream, socket, WsEmit, setPeerC]
-  );
-
   //to initialize wRTC connection offer to the joined client
   const initOffer = async () => {
     if (!socket) return;
     const peer = new RTCPeerConnection(rtcConfig);
-    setPeerEv(peer);
+
+    //to send ICE candiate infomation to the connected peer
+    peer.onicecandidate = (e) => {
+      const candidate = e.candidate;
+      if (!candidate) return;
+
+      WsEmit({
+        event: "ice",
+        data: {
+          ice: JSON.stringify(candidate),
+        },
+      });
+    };
+
+    //to track media streams of the connected peer
+    //   peer.ontrack = (e) => {
+    //     const stream = e.streams[0];
+    //     setRemoteStreams((prev) => {
+    //       prev.set(email, stream);
+    //       return new Map(prev);
+    //     });
+    //   };
+
+    //to send user's media stream to the connected peer
+    if (myStream) {
+      myStream.getTracks().forEach((track) => {
+        WsEmit({
+          event: "proposal",
+          data: {
+            id: track.id,
+            kind: "camera",
+          },
+        });
+        peer.addTrack(track, myStream);
+      });
+    }
+
+    //to handle peer disconnection
+    peer.onconnectionstatechange = () => {
+      const state = peer.connectionState;
+      if (state !== "disconnected") return;
+
+      peer.close();
+      setPeerC(null);
+      // setRemoteStreams((prev) => {
+      //   prev.delete(email);
+      //   return new Map(prev);
+      // });
+      toast.error(` disconnected from the room`);
+    };
 
     //create offer and send it to the server
     const sdp = await peer.createOffer();

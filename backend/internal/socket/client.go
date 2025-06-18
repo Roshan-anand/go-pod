@@ -22,13 +22,13 @@ type WsEv struct {
 
 // represents a client
 type Client struct {
-	hub   *Hub
+	hub    *Hub
 	studio *studio
-	conn  *websocket.Conn
-	send  chan []byte
-	name  string
-	email string
-	peerC *webrtc.PeerConnection
+	conn   *websocket.Conn
+	send   chan []byte
+	name   string
+	email  string
+	peerC  *webrtc.PeerConnection
 }
 
 // it reads the incomming msg from the client
@@ -70,39 +70,39 @@ func (c *Client) readPump() {
 			c.offer(&evMsg.Data)
 		case "ice":
 			c.ice(&evMsg.Data)
+		case "proposal":
+			c.proposal(&evMsg.Data)
 		default:
 			fmt.Println("other event received:", evMsg.Event)
 		}
 
 	}
-
 }
 
 // it writes the msg back to the given client
 func (c *Client) writePump() {
 	defer func() {
+		c.hub.unregister <- c
 		c.conn.Close()
 	}()
 	for {
-		select {
-		case msg, ok := <-c.send:
-			if !ok {
-				c.conn.WriteMessage(websocket.CloseMessage, []byte{})
-				fmt.Println("channel closed, stopping writePump")
-				return
-			}
+		msg, ok := <-c.send
+		if !ok {
+			c.conn.WriteMessage(websocket.CloseMessage, []byte{})
+			fmt.Println("channel closed, stopping writePump")
+			return
+		}
 
-			w, err := c.conn.NextWriter(websocket.TextMessage)
-			if err != nil {
-				log.Printf("error while getting next writer: %v", err)
-				return
-			}
-			w.Write(msg)
+		w, err := c.conn.NextWriter(websocket.TextMessage)
+		if err != nil {
+			log.Printf("error while getting next writer: %v", err)
+			return
+		}
+		w.Write(msg)
 
-			if err = w.Close(); err != nil {
-				log.Printf("error while closing writer: %v", err)
-				return
-			}
+		if err = w.Close(); err != nil {
+			log.Printf("error while closing writer: %v", err)
+			return
 		}
 	}
 }
