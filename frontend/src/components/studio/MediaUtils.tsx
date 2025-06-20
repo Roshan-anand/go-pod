@@ -12,46 +12,52 @@ import { FaMicrophone, FaMicrophoneSlash } from "react-icons/fa";
 import { BsCameraVideoFill, BsCameraVideoOffFill } from "react-icons/bs";
 import { HiSpeakerWave, HiSpeakerXMark } from "react-icons/hi2";
 import { LuScreenShare } from "react-icons/lu";
+import type { StreamT } from "@/lib/Type";
 
 //to show available audio and video devices and allow user to select them
-const SetupMedia = ({ stream }: { stream: MediaStream }) => {
+const SetupMedia = ({ stream }: { stream: StreamT }) => {
   const { audioOpt, videoOpt, setMyStream } = useWrtcContext();
 
   //to set the new selected audio track
   const handleAudioChange = async (deviceId: string) => {
-    stream.getAudioTracks()[0].stop();
-    stream.getAudioTracks()[0].enabled = false;
+    stream.audio.getAudioTracks()[0].stop();
+    stream.audio.getAudioTracks()[0].enabled = false;
 
     // Get new audio track
     const newAudioStream = await navigator.mediaDevices.getUserMedia({
       audio: { deviceId },
     });
+
     const newAudioTrack = newAudioStream.getAudioTracks()[0];
-    const currentVideoTrack = stream.getVideoTracks()[0];
-    const newStream = new MediaStream([newAudioTrack, currentVideoTrack]);
-    setMyStream(newStream);
+    const currentVideoTrack = stream.video.getVideoTracks()[0];
+    setMyStream({
+      audio: new MediaStream([newAudioTrack]),
+      video: new MediaStream([currentVideoTrack]),
+    });
   };
 
   //to set the new selected video track
   const handleVideoChange = async (deviceId: string) => {
-    stream.getVideoTracks()[0].stop();
-    stream.getVideoTracks()[0].enabled = false;
+    stream.video.getVideoTracks()[0].stop();
+    stream.video.getVideoTracks()[0].enabled = false;
 
     // Get new video track
     const newVideoStream = await navigator.mediaDevices.getUserMedia({
       video: { deviceId },
     });
     const newVideoTrack = newVideoStream.getVideoTracks()[0];
-    const currentAudioTrack = stream.getAudioTracks()[0];
-    const newStream = new MediaStream([currentAudioTrack, newVideoTrack]);
-    setMyStream(newStream);
+    const currentAudioTrack = stream.audio.getAudioTracks()[0];
+    setMyStream({
+      audio: new MediaStream([currentAudioTrack]),
+      video: new MediaStream([newVideoTrack]),
+    });
   };
 
   return (
     <figure className="flex flex-col py-2 gap-2 [&>*]:bg-bg-sec [&>*]:rounded-sm">
       {/* audio select */}
       <Select
-        value={stream.getAudioTracks()[0].getSettings().deviceId}
+        value={stream.audio.getAudioTracks()[0].getSettings().deviceId}
         onValueChange={handleAudioChange}
       >
         <SelectTrigger className="w-full">
@@ -68,7 +74,7 @@ const SetupMedia = ({ stream }: { stream: MediaStream }) => {
 
       {/* Video Select */}
       <Select
-        value={stream.getVideoTracks()[0].getSettings().deviceId}
+        value={stream.video.getVideoTracks()[0].getSettings().deviceId}
         onValueChange={handleVideoChange}
       >
         <SelectTrigger className="w-full">
@@ -175,9 +181,13 @@ const ControlerScreenShare = () => {
   const handleScreenShare = async () => {
     const stream = await navigator.mediaDevices.getDisplayMedia({
       video: true,
+      audio: true,
     });
 
-    setMyScreen(stream);
+    setMyScreen({
+      video: new MediaStream([stream.getVideoTracks()[0]]),
+      audio: new MediaStream([stream.getAudioTracks()[0]]),
+    });
     stream.getVideoTracks()[0].addEventListener("ended", () => {
       setMyScreen(null);
     });

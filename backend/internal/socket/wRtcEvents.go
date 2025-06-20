@@ -10,21 +10,6 @@ import (
 	"github.com/pion/webrtc/v4"
 )
 
-type proposal struct {
-	id    string
-	email string
-	kind  string
-	track *webrtc.TrackLocalStaticRTP
-}
-
-type studio struct {
-	name      string
-	clients   map[string]*Client
-	tracks    map[string]*proposal
-	sendTrack chan *webrtc.TrackLocalStaticRTP
-	sendProp  chan *proposal
-}
-
 // configuration for webrtc
 // contains the STUN server used for NAT traversal
 // and the ICE candidate pool size
@@ -85,8 +70,8 @@ func (c *Client) offer(d *WsData[string]) {
 
 	// handling incoming tracks
 	peerC.OnTrack(func(t *webrtc.TrackRemote, receiver *webrtc.RTPReceiver) {
-		fmt.Println("tracks from ", c.email, t.ID())
-		lTrack, err := webrtc.NewTrackLocalStaticRTP(t.Codec().RTPCodecCapability, t.ID(), t.StreamID())
+		id := c.email + "-" + t.ID()
+		lTrack, err := webrtc.NewTrackLocalStaticRTP(t.Codec().RTPCodecCapability, t.ID(), id)
 		if err != nil {
 			fmt.Println("error while creating local track:", err)
 			return
@@ -111,6 +96,19 @@ func (c *Client) offer(d *WsData[string]) {
 			}
 		}
 	})
+
+	// sending other clients tracks
+	for _, prop := range c.studio.tracks {
+		c.WsEmit(&RwsEv{
+			Event: "proposal",
+			Data: WsData[any]{
+				"id":    prop.id,
+				"email": prop.email,
+				"kind":  prop.kind,
+			},
+		})
+		peerC.AddTrack(prop.track)
+	}
 
 	//setting up remote description
 	err = peerC.SetRemoteDescription(webrtc.SessionDescription{
@@ -176,60 +174,10 @@ func (c *Client) proposal(d *WsData[string]) {
 	id := (*d)["id"]
 	kind := (*d)["kind"]
 
-	fmt.Println("proposal for ", id, kind)
-
 	prop := &proposal{
 		id:    id,
 		email: c.email,
 		kind:  kind,
 	}
 	c.studio.sendProp <- prop
-}
-
-// it sets a unique reference for each proposal
-func (s *studio) studioTracksDistribution(prop *proposal) {
-	id := prop.email + prop.kind
-	s.tracks[id] = prop
-	fmt.Println("proposal ready", prop.email, prop.kind, prop.id, prop.track.ID())
-}
-
-// to organize incoming tracks and proposals
-func (s *studio) studioTracksOrg() {
-
-	tracks := make(map[string]*proposal)
-
-	// setting up of new proposal for tracks
-	// if tracks exists, update to it's respective track
-	go func() {
-		for {
-			prop := <-s.sendProp
-			if t, ok := tracks[prop.id]; ok {
-				t.email = prop.email
-				t.kind = prop.kind
-				t.track = prop.track
-				s.studioTracksDistribution(t)
-				delete(tracks, prop.id)
-			} else {
-				tracks[prop.id] = prop
-			}
-		}
-	}()
-
-	// updating the proposal with it's respective track
-	go func() {
-		for {
-			track := <-s.sendTrack
-			if t, ok := tracks[track.ID()]; ok {
-				t.track = track
-				s.studioTracksDistribution(t)
-				delete(tracks, track.ID())
-			} else {
-				tracks[track.ID()] = &proposal{
-					id:    track.ID(),
-					track: track,
-				}
-			}
-		}
-	}()
-
 }

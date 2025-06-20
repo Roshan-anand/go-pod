@@ -30,7 +30,7 @@ func (c *Client) createRoom(d *WsData[string]) {
 	c.hub.mu.Unlock()
 
 	// spins up two workers to listen and organize incoming tracks and proposals
-	c.studio.studioTracksOrg()
+	c.studio.studioTracksOrganize()
 
 	rData := &RwsEv{
 		Event: "room:created",

@@ -16,7 +16,7 @@ import clsx from "clsx";
 import SideBar from "./SideBar";
 
 const Pod = () => {
-  const { email, name } = useSelector((state: StateT) => state.user);
+  const { name } = useSelector((state: StateT) => state.user);
   const { remoteStreams, myStream, myScreen } = useWrtcContext();
   const { leaveStudio } = useStudio();
 
@@ -39,7 +39,7 @@ const Pod = () => {
         <figure className={`grow max-h-[90%] p-5 grid  gap-1 ${gridCols}`}>
           <Player
             stream={myStream}
-            user={email as string}
+            user={"you"}
             className={`${
               count % 2 !== 0 ? "row-span-2" : ""
             } border-2 border-accent`}
@@ -63,8 +63,11 @@ const Pod = () => {
                 <div>record</div>
               </Button>
               <ControlerScreenShare />
-              <ControlerCamera stream={myStream} className="bg-btn-hover" />
-              <ControlerMic stream={myStream} className="bg-btn-hover" />
+              <ControlerCamera
+                stream={myStream.video}
+                className="bg-btn-hover"
+              />
+              <ControlerMic stream={myStream.audio} className="bg-btn-hover" />
               <ControlerSpeaker />
               <Button variant={"prime"} onClick={leaveStudio}>
                 <FcEndCall className="icon-md" />

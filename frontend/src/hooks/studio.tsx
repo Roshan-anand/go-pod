@@ -9,14 +9,17 @@ const useStudio = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { roomID } = useSelector((state: StateT) => state.room);
-  const { myScreen, myStream, setMyStream } = useWrtcContext();
+  const { myScreen, myStream, setMyStream, setMyScreen } = useWrtcContext();
 
   const leaveStudio = () => {
     if (roomID) dispatch(setRoomId(null));
 
     //stop the local stream
     if (myStream) {
-      myStream.getTracks().forEach((track) => {
+      myStream.audio.getTracks().forEach((track) => {
+        track.stop();
+      });
+      myStream.video.getTracks().forEach((track) => {
         track.stop();
       });
       setMyStream(null);
@@ -26,10 +29,13 @@ const useStudio = () => {
 
     //disconnect the screen share
     if (myScreen) {
-      myScreen.getTracks().forEach((track) => {
+      myScreen.audio.getTracks().forEach((track) => {
         track.stop();
       });
-      setMyStream(null);
+      myScreen.video.getTracks().forEach((track) => {
+        track.stop();
+      });
+      setMyScreen(null);
     }
     navigate({ to: "/dashboard" });
   };

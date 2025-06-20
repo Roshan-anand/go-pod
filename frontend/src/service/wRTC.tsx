@@ -1,8 +1,8 @@
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import { useWsContext } from "@/providers/context/socket/config";
 import { useWrtcContext } from "@/providers/context/wRTC/config";
-import type { WsData } from "@/lib/Type";
+import type { Proposal, RemoteStreamT, WsData } from "@/lib/Type";
 import { compressSdp, decompressSdp } from "@/lib/utils";
 import { useDispatch } from "react-redux";
 import { setRoomId } from "@/providers/redux/slice/room";
@@ -21,17 +21,42 @@ const rtcConfig = {
 const useWrtcService = () => {
   const dispatch = useDispatch();
   const { socket, WsEmit, WsOn, WsOff, listeners } = useWsContext();
-  const { myStream } = useWrtcContext();
+  const { myStream, setRemoteStreams, setRemoteScreens } = useWrtcContext();
   const { peerC, setPeerC } = useWrtcContext();
 
   const bufferedIce = useRef<RTCIceCandidateInit[]>([]);
+  const bufferedProp = useRef<Map<string, Proposal>>(new Map());
+
+  const SetTracks = useCallback(
+    ({ email, kind, track }: Proposal) => {
+      if (!email || !track) return;
+
+      const add = (prev: RemoteStreamT) => {
+        const newR = new Map(prev);
+        const client = newR.get(email);
+
+        if (!client)
+          newR.set(email, {
+            audio: new MediaStream(),
+            video: new MediaStream(),
+          });
+        else if (track.kind === "audio") client.audio.addTrack(track);
+        else client.video.addTrack(track);
+        return newR;
+      };
+
+      if (kind === "camera") setRemoteStreams((prev) => add(prev));
+      else setRemoteScreens((prev) => add(prev));
+    },
+    [setRemoteStreams, setRemoteScreens]
+  );
 
   //to initialize wRTC connection offer to the joined client
   const initOffer = async () => {
     if (!socket) return;
     const peer = new RTCPeerConnection(rtcConfig);
 
-    //to send ICE candiate infomation to the connected peer
+    //to send ICE candiate information to the connected peer
     peer.onicecandidate = (e) => {
       const candidate = e.candidate;
       if (!candidate) return;
@@ -45,25 +70,41 @@ const useWrtcService = () => {
     };
 
     //to track media streams of the connected peer
-    //   peer.ontrack = (e) => {
-    //     const stream = e.streams[0];
-    //     setRemoteStreams((prev) => {
-    //       prev.set(email, stream);
-    //       return new Map(prev);
-    //     });
-    //   };
+    peer.ontrack = (e) => {
+      const stream = e.streams[0];
+      const id = stream.id;
+      const proposal = bufferedProp.current.get(id);
+      if (proposal) {
+        proposal.track = e.track;
+        SetTracks(proposal);
+        bufferedProp.current.delete(id);
+      } else {
+        bufferedProp.current.set(id, {
+          id,
+          email: null,
+          kind: null,
+          track: e.track,
+        });
+      }
+    };
 
     //to send user's media stream to the connected peer
     if (myStream) {
-      myStream.getTracks().forEach((track) => {
+      const send = (t: MediaStreamTrack) => {
         WsEmit({
           event: "proposal",
           data: {
-            id: track.id,
+            id: t.id,
             kind: "camera",
           },
         });
-        peer.addTrack(track, myStream);
+        peer.addTrack(t, myStream.audio);
+      };
+      myStream.audio.getTracks().forEach((track) => {
+        send(track);
+      });
+      myStream.video.getTracks().forEach((track) => {
+        send(track);
       });
     }
 
@@ -98,7 +139,6 @@ const useWrtcService = () => {
   useEffect(() => {
     if (!socket) return;
     if (listeners.has("sdp:answer")) return;
-    console.log("setup");
 
     WsOn("sdp:answer", async ({ sdp }: WsData) => {
       if (!peerC) return;
@@ -132,12 +172,26 @@ const useWrtcService = () => {
       dispatch(setRoomId(null));
     });
 
+    WsOn("proposal", ({ id, kind, email }: WsData) => {
+      id = id as string;
+      kind = kind as string;
+      email = email as string;
+      const proposal = bufferedProp.current.get(id);
+      if (proposal) {
+        proposal.kind = kind;
+        proposal.email = email;
+        SetTracks(proposal);
+        bufferedProp.current.delete(id);
+      } else {
+        bufferedProp.current.set(id, { id, kind, email, track: null });
+      }
+    });
+
     return () => {
       WsOff("sdp:answer");
       WsOff("ice");
-      console.log("clean up");
     };
-  }, [socket, peerC, WsOn, WsOff, listeners, dispatch]);
+  }, [socket, peerC, WsOn, WsOff, listeners, dispatch, SetTracks]);
 
   return { initOffer };
 };

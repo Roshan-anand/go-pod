@@ -1,5 +1,6 @@
 import { BiUser } from "react-icons/bi";
 import { useEffect, useRef } from "react";
+import type { StreamT } from "@/lib/Type";
 
 const Player = ({
   stream,
@@ -7,7 +8,7 @@ const Player = ({
   className,
   vdCls,
 }: {
-  stream: MediaStream | null;
+  stream: StreamT | null;
   user: string;
   className?: string;
   vdCls?: string;
@@ -16,10 +17,14 @@ const Player = ({
   const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
-    if (videoRef.current) videoRef.current.srcObject = stream;
-    if (audioRef.current) audioRef.current.srcObject = stream;
+    if (!stream) return;
+    if (videoRef.current) videoRef.current.srcObject = stream.video;
+    if (audioRef.current) audioRef.current.srcObject = stream.audio;
   }, [stream]);
-
+  if (user !== "you"){
+  console.log(user !== "you")
+  console.log("audio", stream?.audio);
+}
   return (
     <figure className={`rounded-md relative overflow-hidden ${className}`}>
       {/* using the video and audio elements directly */}
@@ -32,7 +37,7 @@ const Player = ({
             muted
             className={`size-full  rounded-md object-cover transform scale-x-[-1] ${vdCls}`}
           />
-          <audio ref={audioRef} autoPlay />
+          {user !== "you" && <audio ref={audioRef} autoPlay />}
         </>
       ) : (
         <div className="size-[200px] rounded-md bg-orange-300 flex items-center justify-center">

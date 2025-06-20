@@ -1,4 +1,4 @@
-import { useWrtcContext} from "@/providers/context/wRTC/config";
+import { useWrtcContext } from "@/providers/context/wRTC/config";
 
 const useMedia = () => {
   const { setMyStream, setAudioOpt, setVideoOpt } = useWrtcContext();
@@ -23,7 +23,10 @@ const useMedia = () => {
       console.log("device changed");
     };
 
-    setMyStream(media);
+    setMyStream({
+      audio: new MediaStream([media.getAudioTracks()[0]]),
+      video: new MediaStream([media.getVideoTracks()[0]]),
+    });
   };
 
   return {

@@ -4,21 +4,23 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
-import type { RemoteStreamT } from "../../../lib/Type";
+import type { RemoteStreamT, StreamT } from "../../../lib/Type";
 
 type contextT = {
   peerC: RTCPeerConnection | null;
   setPeerC: Dispatch<SetStateAction<RTCPeerConnection | null>>;
-  myStream: MediaStream | null;
-  setMyStream: Dispatch<SetStateAction<MediaStream | null>>;
+  myStream: StreamT | null;
+  setMyStream: Dispatch<SetStateAction<StreamT | null>>;
+  myScreen: StreamT | null;
+  setMyScreen: Dispatch<SetStateAction<StreamT | null>>;
   remoteStreams: RemoteStreamT;
   setRemoteStreams: Dispatch<SetStateAction<RemoteStreamT>>;
+  remoteScreens: RemoteStreamT;
+  setRemoteScreens: Dispatch<SetStateAction<RemoteStreamT>>;
   audioOpt: MediaDeviceInfo[];
   setAudioOpt: Dispatch<SetStateAction<MediaDeviceInfo[]>>;
   videoOpt: MediaDeviceInfo[];
   setVideoOpt: Dispatch<SetStateAction<MediaDeviceInfo[]>>;
-  myScreen: MediaStream | null;
-  setMyScreen: Dispatch<SetStateAction<MediaStream | null>>;
 };
 
 export const WrtcContext = createContext<contextT | null>(null);
