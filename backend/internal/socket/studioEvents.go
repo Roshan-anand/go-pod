@@ -2,6 +2,7 @@ package socket
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/pion/webrtc/v4"
 )
@@ -35,6 +36,13 @@ func (s *studio) studioTracksDistribute(prop *proposal) {
 				},
 			})
 			c.peerC.AddTrack(prop.track)
+
+			if c.flushTimer != nil {
+				c.flushTimer.Stop()
+			}
+			c.flushTimer = time.AfterFunc(500*time.Millisecond, func() {
+				c.initOffer()
+			})
 		}
 	}
 

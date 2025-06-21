@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/pion/webrtc/v4"
@@ -22,13 +23,14 @@ type WsEv struct {
 
 // represents a client
 type Client struct {
-	hub    *Hub
-	studio *studio
-	conn   *websocket.Conn
-	send   chan []byte
-	name   string
-	email  string
-	peerC  *webrtc.PeerConnection
+	hub        *Hub
+	studio     *studio
+	conn       *websocket.Conn
+	send       chan []byte
+	name       string
+	email      string
+	peerC      *webrtc.PeerConnection
+	flushTimer *time.Timer
 }
 
 // it reads the incomming msg from the client

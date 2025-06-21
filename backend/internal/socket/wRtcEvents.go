@@ -31,6 +31,7 @@ var config = webrtc.Configuration{
 
 // to initialize a new offer
 func (c *Client) initOffer() {
+	fmt.Println(" negotiation needed for ", c.email)
 	sdp, err := c.peerC.CreateOffer(nil)
 	if err != nil {
 		fmt.Println("error while creating offer:", err)
@@ -134,11 +135,6 @@ func (c *Client) offer(d *WsData[string]) {
 			}
 		})
 
-		peerC.OnNegotiationNeeded(func() {
-			fmt.Println("negotiation needed for ", c.email)
-			c.initOffer()
-		})
-
 		// sending other clients tracks
 		for _, prop := range c.studio.tracks {
 			c.WsEmit(&RwsEv{
@@ -149,6 +145,7 @@ func (c *Client) offer(d *WsData[string]) {
 					"kind":  prop.kind,
 				},
 			})
+			fmt.Printf("sending %s %s tracks to %s\n", prop.email, prop.track.Kind().String(), c.email)
 			peerC.AddTrack(prop.track)
 		}
 	} else {
