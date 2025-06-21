@@ -33,15 +33,18 @@ const useWrtcService = () => {
 
       const add = (prev: RemoteStreamT) => {
         const newR = new Map(prev);
-        const client = newR.get(email);
 
-        if (!client)
+        if (!newR.has(email))
           newR.set(email, {
             audio: new MediaStream(),
             video: new MediaStream(),
           });
-        else if (track.kind === "audio") client.audio.addTrack(track);
-        else client.video.addTrack(track);
+
+        const client = newR.get(email);
+        if (client) {
+          if (track.kind === "audio") client.audio.addTrack(track);
+          else client.video.addTrack(track);
+        }
         return newR;
       };
 
@@ -107,6 +110,18 @@ const useWrtcService = () => {
         send(track);
       });
     }
+
+    peer.onnegotiationneeded = async () => {
+      console.log("negotiation needed");
+      // const offer = await peer.createOffer();
+      // await peer.setLocalDescription(offer);
+      // WsEmit({
+      //   event: "sdp:offer",
+      //   data: {
+      //     sdp: compressSdp(offer.sdp),
+      //   },
+      // });
+    };
 
     //to handle peer disconnection
     peer.onconnectionstatechange = () => {

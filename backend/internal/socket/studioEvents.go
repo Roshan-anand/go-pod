@@ -24,19 +24,19 @@ type studio struct {
 // it sets a unique reference for each proposal
 func (s *studio) studioTracksDistribute(prop *proposal) {
 	// now distribute to all clients in the studio
-	// for _, c := range s.clients {
-	// 	if c.email != prop.email {
-	// 		c.WsEmit(&RwsEv{
-	// 			Event: "proposal",
-	// 			Data: WsData[any]{
-	// 				"id":    prop.id,
-	// 				"email": prop.email,
-	// 				"kind":  prop.kind,
-	// 			},
-	// 		})
-	// 		c.peerC.AddTrack(prop.track)
-	// 	}
-	// }
+	for _, c := range s.clients {
+		if c.email != prop.email {
+			c.WsEmit(&RwsEv{
+				Event: "proposal",
+				Data: WsData[any]{
+					"id":    prop.id,
+					"email": prop.email,
+					"kind":  prop.kind,
+				},
+			})
+			c.peerC.AddTrack(prop.track)
+		}
+	}
 
 	id := fmt.Sprintf("%s-%s-%s", prop.email, prop.kind, prop.track.Kind().String())
 	s.tracks[id] = prop

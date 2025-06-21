@@ -21,10 +21,6 @@ const Player = ({
     if (videoRef.current) videoRef.current.srcObject = stream.video;
     if (audioRef.current) audioRef.current.srcObject = stream.audio;
   }, [stream]);
-  if (user !== "you"){
-  console.log(user !== "you")
-  console.log("audio", stream?.audio);
-}
   return (
     <figure className={`rounded-md relative overflow-hidden ${className}`}>
       {/* using the video and audio elements directly */}

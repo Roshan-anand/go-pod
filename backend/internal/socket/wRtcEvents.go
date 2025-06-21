@@ -97,6 +97,31 @@ func (c *Client) offer(d *WsData[string]) {
 		}
 	})
 
+	peerC.OnNegotiationNeeded(func() {
+		fmt.Println("negotiation needed")
+		sdp, err := peerC.CreateOffer(nil)
+		if err != nil {
+			fmt.Println("error while creating offer:", err)
+			return
+		}
+		err = peerC.SetLocalDescription(sdp)
+		if err != nil {
+			fmt.Println("error while setting local description:", err)
+			return
+		}
+		sdpStr, err := utils.CompressD(&sdp.SDP)
+		if err != nil {
+			fmt.Println("error while compressing sdp:", err)
+			return
+		}
+		c.WsEmit(&RwsEv{
+			Event: "sdp:offer",
+			Data: WsData[any]{
+				"sdp": sdpStr,
+			},
+		})
+	})
+
 	// sending other clients tracks
 	for _, prop := range c.studio.tracks {
 		c.WsEmit(&RwsEv{

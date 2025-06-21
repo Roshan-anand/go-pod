@@ -12,7 +12,6 @@ const ContextProvider = ({ children }: { children: React.ReactNode }) => {
   const [audioOpt, setAudioOpt] = useState<MediaDeviceInfo[]>([]);
   const [videoOpt, setVideoOpt] = useState<MediaDeviceInfo[]>([]);
 
-  console.log(remoteStreams);
   return (
     <WrtcContext.Provider
       value={{
