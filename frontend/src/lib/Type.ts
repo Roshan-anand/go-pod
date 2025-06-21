@@ -24,3 +24,5 @@ export type Proposal = {
   kind: string | null;
   track: MediaStreamTrack | null;
 };
+
+export type RtcConnT = "initial" | "negotiate";

@@ -68,6 +68,8 @@ func (c *Client) readPump() {
 			c.checkRoom(&evMsg.Data)
 		case "sdp:offer":
 			c.offer(&evMsg.Data)
+		case "sdp:answer":
+			c.answer(&evMsg.Data)
 		case "ice":
 			c.ice(&evMsg.Data)
 		case "proposal":

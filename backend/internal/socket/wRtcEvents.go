@@ -10,6 +10,13 @@ import (
 	"github.com/pion/webrtc/v4"
 )
 
+type ConnType string
+
+const (
+	Initial   ConnType = "initial"
+	Negotiate ConnType = "negotiate"
+)
+
 // configuration for webrtc
 // contains the STUN server used for NAT traversal
 // and the ICE candidate pool size
@@ -22,117 +29,130 @@ var config = webrtc.Configuration{
 	ICECandidatePoolSize: 10,
 }
 
+// to initialize a new offer
+func (c *Client) initOffer() {
+	sdp, err := c.peerC.CreateOffer(nil)
+	if err != nil {
+		fmt.Println("error while creating offer:", err)
+		return
+	}
+	err = c.peerC.SetLocalDescription(sdp)
+	if err != nil {
+		fmt.Println("error while setting local description:", err)
+		return
+	}
+	sdpStr, err := utils.CompressD(&sdp.SDP)
+	if err != nil {
+		fmt.Println("error while compressing sdp:", err)
+		return
+	}
+	c.WsEmit(&RwsEv{
+		Event: "sdp:offer",
+		Data: WsData[any]{
+			"sdp": sdpStr,
+		},
+	})
+}
+
 // to handle sdp offer
 func (c *Client) offer(d *WsData[string]) {
+	connT := (*d)["type"]
+	compSdp := (*d)["sdp"]
 	rErrData := &RwsEv{
 		Event: "error:rtc",
 		Data:  make(WsData[any]),
 	}
 
 	//decompress the sdp data
-	sdp, err := utils.DecompressD((*d)["sdp"])
+	sdp, err := utils.DecompressD(compSdp)
 	if err != nil {
 		fmt.Println("error while decompressing sdp:", err)
 		c.WsEmit(rErrData)
 		return
 	}
 
-	// making a new peer connection
-	peerC, err := webrtc.NewPeerConnection(config)
-	if err != nil {
-		c.WsEmit(rErrData)
-		return
-	}
-	c.peerC = peerC
+	var peerC *webrtc.PeerConnection
 
-	//handle connection state
-	peerC.OnConnectionStateChange(func(s webrtc.PeerConnectionState) {
-		if s == webrtc.PeerConnectionStateClosed || s == webrtc.PeerConnectionStateFailed {
-			fmt.Println("peer connection closed or failed")
-		}
-	})
-
-	// on ICE candidate gathering
-	peerC.OnICECandidate(func(i *webrtc.ICECandidate) {
-		if i == nil {
-			fmt.Println("ICE candidate gathering complete")
-			return
-		}
-
-		ice := i.ToJSON()
-		c.WsEmit(&RwsEv{
-			Event: "ice",
-			Data: WsData[any]{
-				"ice": ice,
-			},
-		})
-	})
-
-	// handling incoming tracks
-	peerC.OnTrack(func(t *webrtc.TrackRemote, receiver *webrtc.RTPReceiver) {
-		id := c.email + "-" + t.ID()
-		lTrack, err := webrtc.NewTrackLocalStaticRTP(t.Codec().RTPCodecCapability, t.ID(), id)
+	if connT == string(Initial) {
+		// making a new peer connection
+		peerC, err = webrtc.NewPeerConnection(config)
 		if err != nil {
-			fmt.Println("error while creating local track:", err)
+			c.WsEmit(rErrData)
 			return
 		}
+		c.peerC = peerC
 
-		// sending tracks to the studio tracks channel
-		// for organizing and distributing tracks
-		c.studio.sendTrack <- lTrack
+		//handle connection state
+		peerC.OnConnectionStateChange(func(s webrtc.PeerConnectionState) {
+			if s == webrtc.PeerConnectionStateClosed || s == webrtc.PeerConnectionStateFailed {
+				fmt.Println("peer connection closed or failed")
+			}
+		})
 
-		rtpBuf := make([]byte, 1400)
-		for {
-			i, _, readErr := t.Read(rtpBuf)
-			if readErr != nil {
-				fmt.Println("error while reading track:", readErr)
-				break
+		// on ICE candidate gathering
+		peerC.OnICECandidate(func(i *webrtc.ICECandidate) {
+			if i == nil {
+				fmt.Println("ICE candidate gathering complete")
+				return
 			}
 
-			// ErrClosedPipe means we don't have any subscribers, this is ok if no peers have connected yet
-			if _, err = lTrack.Write(rtpBuf[:i]); err != nil && !errors.Is(err, io.ErrClosedPipe) {
-				fmt.Println("error while writing track:", err)
-				break
+			ice := i.ToJSON()
+			c.WsEmit(&RwsEv{
+				Event: "ice",
+				Data: WsData[any]{
+					"ice": ice,
+				},
+			})
+		})
+
+		// handling incoming tracks
+		peerC.OnTrack(func(t *webrtc.TrackRemote, receiver *webrtc.RTPReceiver) {
+			id := c.email + "-" + t.ID()
+			lTrack, err := webrtc.NewTrackLocalStaticRTP(t.Codec().RTPCodecCapability, t.ID(), id)
+			if err != nil {
+				fmt.Println("error while creating local track:", err)
+				return
 			}
-		}
-	})
 
-	peerC.OnNegotiationNeeded(func() {
-		fmt.Println("negotiation needed")
-		sdp, err := peerC.CreateOffer(nil)
-		if err != nil {
-			fmt.Println("error while creating offer:", err)
-			return
-		}
-		err = peerC.SetLocalDescription(sdp)
-		if err != nil {
-			fmt.Println("error while setting local description:", err)
-			return
-		}
-		sdpStr, err := utils.CompressD(&sdp.SDP)
-		if err != nil {
-			fmt.Println("error while compressing sdp:", err)
-			return
-		}
-		c.WsEmit(&RwsEv{
-			Event: "sdp:offer",
-			Data: WsData[any]{
-				"sdp": sdpStr,
-			},
-		})
-	})
+			// sending tracks to the studio tracks channel
+			// for organizing and distributing tracks
+			c.studio.sendTrack <- lTrack
 
-	// sending other clients tracks
-	for _, prop := range c.studio.tracks {
-		c.WsEmit(&RwsEv{
-			Event: "proposal",
-			Data: WsData[any]{
-				"id":    prop.id,
-				"email": prop.email,
-				"kind":  prop.kind,
-			},
+			rtpBuf := make([]byte, 1400)
+			for {
+				i, _, readErr := t.Read(rtpBuf)
+				if readErr != nil {
+					fmt.Println("error while reading track:", readErr)
+					break
+				}
+
+				// ErrClosedPipe means we don't have any subscribers, this is ok if no peers have connected yet
+				if _, err = lTrack.Write(rtpBuf[:i]); err != nil && !errors.Is(err, io.ErrClosedPipe) {
+					fmt.Println("error while writing track:", err)
+					break
+				}
+			}
 		})
-		peerC.AddTrack(prop.track)
+
+		peerC.OnNegotiationNeeded(func() {
+			fmt.Println("negotiation needed for ", c.email)
+			c.initOffer()
+		})
+
+		// sending other clients tracks
+		for _, prop := range c.studio.tracks {
+			c.WsEmit(&RwsEv{
+				Event: "proposal",
+				Data: WsData[any]{
+					"id":    prop.id,
+					"email": prop.email,
+					"kind":  prop.kind,
+				},
+			})
+			peerC.AddTrack(prop.track)
+		}
+	} else {
+		peerC = c.peerC
 	}
 
 	//setting up remote description
@@ -171,8 +191,24 @@ func (c *Client) offer(d *WsData[string]) {
 	c.WsEmit(&RwsEv{
 		Event: "sdp:answer",
 		Data: WsData[any]{
-			"sdp": sdp,
+			"type": connT,
+			"sdp":  sdp,
 		},
+	})
+}
+
+// to handle SDP answer
+func (c *Client) answer(d *WsData[string]) {
+	sdp := (*d)["sdp"]
+
+	sdpStr, err := utils.DecompressD(sdp)
+	if err != nil {
+		fmt.Println("error while decompressing sdp:", err)
+		return
+	}
+	c.peerC.SetRemoteDescription(webrtc.SessionDescription{
+		Type: webrtc.SDPTypeAnswer,
+		SDP:  sdpStr,
 	})
 }
 
