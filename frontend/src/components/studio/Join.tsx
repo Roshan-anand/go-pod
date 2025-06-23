@@ -11,9 +11,8 @@ import { useDispatch, useSelector } from "react-redux";
 import type { StateT } from "@/providers/redux/store";
 import Loading from "@/Loading";
 import useMedia from "@/hooks/Media";
-import type { RtcConnT } from "@/lib/Type";
 
-const Join = ({ offer }: { offer: (type: RtcConnT) => Promise<void> }) => {
+const Join = ({ offer }: { offer: () => Promise<void> }) => {
   //context call
   const { myStream } = useWrtcContext();
 
