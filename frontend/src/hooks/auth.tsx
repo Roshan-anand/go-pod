@@ -41,13 +41,16 @@ const useAuth = () => {
 
     const checkAuth = async () => {
       try {
-        const res = await fetch(import.meta.env.VITE_NODE_URL + "/auth/user", {
-          method: "GET",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+        const res = await fetch(
+          import.meta.env.VITE_BACKEND_URL + "/auth/user",
+          {
+            method: "GET",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
         if (res.status !== 200) {
           redirect();
           return;

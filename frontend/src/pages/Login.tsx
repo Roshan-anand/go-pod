@@ -23,7 +23,7 @@ const Login = () => {
       return;
     }
 
-    await fetch(import.meta.env.VITE_NODE_URL + "/auth/login", {
+    await fetch(import.meta.env.VITE_BACKEND_URL + "/auth/login", {
       method: "POST",
       body: JSON.stringify({ name, email }),
       headers: {
