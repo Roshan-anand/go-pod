@@ -9,7 +9,7 @@ const useSocket = (conn: Dispatch<SetStateAction<boolean>>) => {
     let reconnectTimer: ReturnType<typeof setTimeout>;
     //to connect ws
     const connectWS = () => {
-      ws = new WebSocket("ws://localhost:8080/ws");
+      ws = new WebSocket(import.meta.env.VITE_BACKEND_WS_URL as string);
       ws.addEventListener("open", wsOpen);
       ws.addEventListener("close", wsClose);
       ws.addEventListener("error", wsError);

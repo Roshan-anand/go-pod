@@ -1,30 +1,32 @@
 services:
   server:
-    image: gopod-s:latest
-    container_name: server
-    ports:
-      - "5000:5000"
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: gopod-s
+    expose:
+      - 8080
     environment:
-      - FRONTEND_URL=http://localhost:5173
-      - JWT_SECRET=G0_po0i5go0o4-just
-      - COOKIE_SECURE=true     
-      - SECURE=true
+      - JWT_SECRET_KEY=u19kaneh90skwit4bskhagwl2
+      - CLIENT_URL=http://client:5173
     restart: always
     networks:
-      - gopod-n
+      - gopod-net
   client:
-    image: gopod-c:latest
-    container_name: client
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - BACKEND_URL=http://server:8080
+        - BACKEND_WS_URL=ws://server:8080/ws
+    image: gopod-c
     ports:
-      - "5173:80"
-    environment:
-      - VITE_NODE_URL=http://localhost:5000
+      - 5173:5173
+    depends_on:
+      - server
     restart: always
     networks:
-      - gopod-n
+      - gopod-net
 networks:
-  gopod-n:
-    ipam:
-      driver: default
-      config:
-        - subnet: "172.18.0.0/16"
+  gopod-net:
+    driver: bridge

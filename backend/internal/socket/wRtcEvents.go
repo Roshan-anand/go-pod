@@ -188,8 +188,7 @@ func (c *Client) offer(d *WsData[string]) {
 	c.WsEmit(&RwsEv{
 		Event: "sdp:answer",
 		Data: WsData[any]{
-			"type": connT,
-			"sdp":  sdp,
+			"sdp": sdp,
 		},
 	})
 }

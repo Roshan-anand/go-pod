@@ -176,7 +176,7 @@ const ControlerSpeaker = ({ className }: { className?: string }) => {
 
 //to give control over screen share
 const ControlerScreenShare = () => {
-  const { setMyScreen } = useWrtcContext();
+  const { setMyScreen, setRtcState } = useWrtcContext();
 
   const handleScreenShare = async () => {
     const stream = await navigator.mediaDevices.getDisplayMedia({
@@ -184,13 +184,21 @@ const ControlerScreenShare = () => {
       audio: true,
     });
 
-    setMyScreen({
+    const streans: StreamT = {
       video: new MediaStream([stream.getVideoTracks()[0]]),
-      audio: new MediaStream([stream.getAudioTracks()[0]]),
-    });
+      audio: new MediaStream(),
+    };
+
+    if (stream.getAudioTracks()[0])
+      streans.audio = new MediaStream([stream.getAudioTracks()[0]]);
+
+    setMyScreen(streans);
+
     stream.getVideoTracks()[0].addEventListener("ended", () => {
+      console.log("Screen share ended");
       setMyScreen(null);
     });
+    setRtcState("negotiate");
   };
 
   return (

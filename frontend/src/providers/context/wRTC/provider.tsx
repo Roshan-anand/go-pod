@@ -1,7 +1,7 @@
 import type React from "react";
 import { useState } from "react";
 import { WrtcContext } from "./config";
-import type { RemoteStreamT, StreamT } from "../../../lib/Type";
+import type { RemoteStreamT, RtcConnT, StreamT } from "../../../lib/Type";
 
 const ContextProvider = ({ children }: { children: React.ReactNode }) => {
   const [peerC, setPeerC] = useState<RTCPeerConnection | null>(null);
@@ -11,6 +11,7 @@ const ContextProvider = ({ children }: { children: React.ReactNode }) => {
   const [remoteScreens, setRemoteScreens] = useState<RemoteStreamT>(new Map());
   const [audioOpt, setAudioOpt] = useState<MediaDeviceInfo[]>([]);
   const [videoOpt, setVideoOpt] = useState<MediaDeviceInfo[]>([]);
+  const [RtcState, setRtcState] = useState<RtcConnT>("initial");
 
   return (
     <WrtcContext.Provider
@@ -20,7 +21,7 @@ const ContextProvider = ({ children }: { children: React.ReactNode }) => {
         myStream,
         setMyStream,
         remoteStreams,
-        setRemoteStreams,
+        setRemoteStreams, 
         audioOpt,
         setAudioOpt,
         videoOpt,
@@ -29,6 +30,8 @@ const ContextProvider = ({ children }: { children: React.ReactNode }) => {
         setMyScreen,
         remoteScreens,
         setRemoteScreens,
+        RtcState,
+        setRtcState,
       }}
     >
       {children}

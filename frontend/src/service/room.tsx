@@ -5,10 +5,10 @@ import { toast } from "react-toastify";
 import { setPodRole, setRoomId } from "../providers/redux/slice/room";
 import { useNavigate } from "@tanstack/react-router";
 import { useWsContext } from "@/providers/context/socket/config";
-import type { RtcConnT, WsData, wsEvent } from "@/lib/Type";
+import type { WsData, wsEvent } from "@/lib/Type";
 
 //handles all the room emit and listen event's
-const useRoomService = (offer: (type: RtcConnT) => Promise<void>) => {
+const useRoomService = (offer: () => Promise<void>) => {
   //hooks
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -63,7 +63,7 @@ const useRoomService = (offer: (type: RtcConnT) => Promise<void>) => {
       },
     };
     WsEmit(payload);
-    offer("initial");
+    offer();
   };
 
   //to emit join room
@@ -78,7 +78,7 @@ const useRoomService = (offer: (type: RtcConnT) => Promise<void>) => {
       },
     };
     WsEmit(payload);
-    offer("initial");
+    offer();
   };
 
   //to emit check room

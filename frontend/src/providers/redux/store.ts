@@ -1,6 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
-import user from "./slice/user";
-// import user from "./slice/user.test"; //for test cases
+// import user from "./slice/user";
+import user from "./slice/user.test"; //for test cases
 import room from "./slice/room";
 
 export const store = configureStore({

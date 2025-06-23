@@ -4,7 +4,7 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
-import type { RemoteStreamT, StreamT } from "../../../lib/Type";
+import type { RemoteStreamT, RtcConnT, StreamT } from "../../../lib/Type";
 
 type contextT = {
   peerC: RTCPeerConnection | null;
@@ -21,6 +21,8 @@ type contextT = {
   setAudioOpt: Dispatch<SetStateAction<MediaDeviceInfo[]>>;
   videoOpt: MediaDeviceInfo[];
   setVideoOpt: Dispatch<SetStateAction<MediaDeviceInfo[]>>;
+  RtcState: RtcConnT;
+  setRtcState: Dispatch<SetStateAction<RtcConnT>>;
 };
 
 export const WrtcContext = createContext<contextT | null>(null);

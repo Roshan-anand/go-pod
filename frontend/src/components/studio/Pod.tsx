@@ -14,11 +14,13 @@ import { FaRecordVinyl } from "react-icons/fa";
 import { FcEndCall } from "react-icons/fc";
 import clsx from "clsx";
 import SideBar from "./SideBar";
+import useMediaChange from "@/service/MediaChange";
 
 const Pod = () => {
   const { name } = useSelector((state: StateT) => state.user);
-  const { remoteStreams, myStream, myScreen } = useWrtcContext();
+  const { remoteStreams, remoteScreens, myStream, myScreen } = useWrtcContext();
   const { leaveStudio } = useStudio();
+  useMediaChange();
 
   const count = remoteStreams.size + 1;
   const columns = count == 1 ? 1 : count <= 3 ? 2 : Math.ceil(count / 2);
@@ -52,6 +54,9 @@ const Pod = () => {
             />
           )}
           {Array.from(remoteStreams.entries()).map(([email, stream]) => (
+            <Player stream={stream} user={email} key={email} />
+          ))}
+          {Array.from(remoteScreens.entries()).map(([email, stream]) => (
             <Player stream={stream} user={email} key={email} />
           ))}
         </figure>
