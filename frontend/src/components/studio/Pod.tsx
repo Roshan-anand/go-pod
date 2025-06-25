@@ -5,22 +5,24 @@ import Player from "./Player";
 import {
   ControlerCamera,
   ControlerMic,
+  ControlerRecord,
   ControlerScreenShare,
   ControlerSpeaker,
 } from "./MediaUtils";
 import { Button } from "../ui/button";
 import useStudio from "@/hooks/studio";
-import { FaRecordVinyl } from "react-icons/fa";
 import { FcEndCall } from "react-icons/fc";
 import clsx from "clsx";
 import SideBar from "./SideBar";
-import useMediaChange from "@/service/MediaChange";
+import useMediaChange from "@/hooks/MediaChange";
+import useRecordingService from "@/hooks/Recording";
 
 const Pod = () => {
   const { name } = useSelector((state: StateT) => state.user);
   const { remoteStreams, remoteScreens, myStream, myScreen } = useWrtcContext();
   const { leaveStudio } = useStudio();
   useMediaChange();
+  useRecordingService();
 
   const count = remoteStreams.size + 1;
   const columns = count == 1 ? 1 : count <= 3 ? 2 : Math.ceil(count / 2);
@@ -63,10 +65,7 @@ const Pod = () => {
         <figure className="h-[10%] mx-auto rounded-md mb-2 flex gap-3 items-center [&>*]:rounded-full [&>*]:p-3">
           {myStream && (
             <>
-              <Button variant={"destructive"} className="flex gap-1">
-                <FaRecordVinyl className="icon-sm" />
-                <div>record</div>
-              </Button>
+              <ControlerRecord />
               <ControlerScreenShare />
               <ControlerCamera
                 stream={myStream.video}

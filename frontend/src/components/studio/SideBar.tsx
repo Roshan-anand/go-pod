@@ -3,6 +3,7 @@ import { Button } from "../ui/button";
 import { useSelector } from "react-redux";
 import type { StateT } from "@/providers/redux/store";
 import { IoPersonAddSharp } from "react-icons/io5";
+
 const SideBar = () => {
   const { roomID } = useSelector((state: StateT) => state.room);
 
@@ -15,7 +16,11 @@ const SideBar = () => {
   };
   return (
     <aside className="bg-bg-sec w-1/4 max-w-[200px] m-2 py-2 rounded-md flex justify-center ">
-      <Button variant={"prime"} onClick={handleCopy} className="p-2 h-fit w-1/2">
+      <Button
+        variant={"prime"}
+        onClick={handleCopy}
+        className="p-2 h-fit w-1/2"
+      >
         <IoPersonAddSharp className="icon-md" />
       </Button>
     </aside>

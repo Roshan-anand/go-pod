@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import useRoomService from "../../service/room";
 import { useWrtcContext } from "../../providers/context/wRTC/config";
 import Player from "./Player";
 import { Button } from "../ui/button";
@@ -11,6 +10,7 @@ import { useDispatch, useSelector } from "react-redux";
 import type { StateT } from "@/providers/redux/store";
 import Loading from "@/Loading";
 import useMedia from "@/hooks/Media";
+import useRoomService from "@/hooks/room";
 
 const Join = ({ offer }: { offer: () => Promise<void> }) => {
   //context call

@@ -7,7 +7,7 @@ import Loading from "@/Loading";
 import { StudioNav } from "@/components/studio/Nav";
 import useSocket from "@/hooks/socket";
 import { useState } from "react";
-import useWrtcService from "@/service/wRTC";
+import useWrtcService from "@/hooks/wRTC";
 
 const Studio = () => {
   useAuth();

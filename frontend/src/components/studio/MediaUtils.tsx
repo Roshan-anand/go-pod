@@ -9,6 +9,7 @@ import {
   SelectContent,
 } from "../ui/select";
 import { FaMicrophone, FaMicrophoneSlash } from "react-icons/fa";
+import { FaRecordVinyl } from "react-icons/fa";
 import { BsCameraVideoFill, BsCameraVideoOffFill } from "react-icons/bs";
 import { HiSpeakerWave, HiSpeakerXMark } from "react-icons/hi2";
 import { LuScreenShare } from "react-icons/lu";
@@ -208,10 +209,29 @@ const ControlerScreenShare = () => {
   );
 };
 
+const ControlerRecord = () => {
+  const { isRecording, setIsRecording } = useWrtcContext();
+  return (
+    <>
+      <Button
+        variant={"destructive"}
+        className="flex gap-1"
+        onClick={() => {
+          setIsRecording(!isRecording);
+        }}
+      >
+        <FaRecordVinyl className="icon-sm" />
+        {isRecording ? <p>stop</p> : <p>record</p>}
+      </Button>
+    </>
+  );
+};
+
 export {
   ControlerMic,
   ControlerCamera,
   ControlerSpeaker,
   ControlerScreenShare,
   SetupMedia,
+  ControlerRecord,
 };

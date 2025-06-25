@@ -12,6 +12,7 @@ const ContextProvider = ({ children }: { children: React.ReactNode }) => {
   const [audioOpt, setAudioOpt] = useState<MediaDeviceInfo[]>([]);
   const [videoOpt, setVideoOpt] = useState<MediaDeviceInfo[]>([]);
   const [RtcState, setRtcState] = useState<RtcConnT>("initial");
+  const [isRecording, setIsRecording] = useState<boolean>(false);
 
   return (
     <WrtcContext.Provider
@@ -21,7 +22,7 @@ const ContextProvider = ({ children }: { children: React.ReactNode }) => {
         myStream,
         setMyStream,
         remoteStreams,
-        setRemoteStreams, 
+        setRemoteStreams,
         audioOpt,
         setAudioOpt,
         videoOpt,
@@ -32,6 +33,8 @@ const ContextProvider = ({ children }: { children: React.ReactNode }) => {
         setRemoteScreens,
         RtcState,
         setRtcState,
+        isRecording,
+        setIsRecording,
       }}
     >
       {children}
