@@ -6,21 +6,9 @@ import HeroSection from "@/components/landing/hero-section";
 const Landing = () => {
   // const navigate = useNavigate();
   return (
-    <div className="bg-[#0B0909]">
+    <main className="bg-bg-prime">
       <HeroSection />
-      {/* <Nav />
-      <main>
-        <h3>go to dashboard</h3>
-        <Button
-        variant={"action"}
-        onClick={() => {
-          navigate({ to: "/dashboard" });
-        }}
-      >
-        Go to Dashboard
-      </Button>
-      </main> */}
-    </div>
+    </main>
   );
 };
 

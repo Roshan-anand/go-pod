@@ -2,8 +2,13 @@ import { Button } from "@/components/ui/button";
 import { HeroHeader } from "./header";
 import { InfiniteSlider } from "@/components/ui/infinite-slider";
 import { ProgressiveBlur } from "@/components/ui/progressive-blur";
+import { useNavigate } from "@tanstack/react-router";
+import { LuMoveRight } from "react-icons/lu";
+import { FaMicrophoneAlt } from "react-icons/fa";
+import "@/styles/animation.css";
 
 export default function HeroSection() {
+  const navigate = useNavigate();
   return (
     <>
       <HeroHeader />
@@ -24,11 +29,21 @@ export default function HeroSection() {
                 </p>
 
                 <div className="mt-12 flex flex-col items-center justify-center gap-2 sm:flex-row lg:justify-start">
-                  <Button asChild className="px-5 text-base">
-                    <span className="text-nowrap">Start Recording now</span>
-                  </Button>
-                  <Button key={2} asChild className="px-5 text-base">
-                    <span className="text-nowrap">Watch a demo</span>
+                  <button
+                    className="px-5 py-2 border-2 border-btn-sec hover-anim rounded-sm"
+                    onClick={() => {
+                      navigate({ to: "/dashboard" });
+                    }}
+                  >
+                    <p className="text">Start Recording</p>
+                    <span >
+                      <LuMoveRight className="icon-md text-bg-sec" />
+                      <FaMicrophoneAlt className="icon-sm text-bg-sec" />
+                    </span>
+                  </button>
+
+                  <Button key={2} className="px-5 text-base">
+                    Watch a demo
                   </Button>
                 </div>
               </div>
@@ -43,13 +58,13 @@ export default function HeroSection() {
           </div>
         </section>
         <section className="bg-background pb-16 md:pb-32">
-          <div className="group relative m-auto max-w-6xl px-6">
+          <div className="group relative m-auto px-6">
             <div className="flex flex-col items-center md:flex-row">
               <div className="md:max-w-44 md:border-r md:pr-6">
                 <p className="text-end text-sm">Powering the best teams</p>
               </div>
-              <div className="relative py-6 md:w-[calc(100%-11rem)]">
-                <InfiniteSlider speedOnHover={20} speed={40} gap={112}>
+              <div className="relative py-6 w-[90%]">
+                <InfiniteSlider speedOnHover={20} speed={40} gap={110}>
                   <div className="flex">
                     <img
                       className="mx-auto h-5 w-fit dark:invert"

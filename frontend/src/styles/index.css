@@ -23,8 +23,13 @@
   --color-btn-hover: var(--btn-hover);
 }
 
-.grad-one {background: #39FF14;
-  background: linear-gradient(156deg, rgba(57, 255, 20, 1) 41%, rgba(255, 107, 53, 1) 69%);
+.grad-one {
+  background: #39ff14;
+  background: linear-gradient(
+    156deg,
+    rgba(57, 255, 20, 1) 41%,
+    rgba(255, 107, 53, 1) 69%
+  );
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
