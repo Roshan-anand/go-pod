@@ -10,7 +10,6 @@
   --btn-hover: #333333;
   --btn-sec: #39ff14;
   --accent: #ff6b35;
-
 }
 
 @theme {
@@ -22,6 +21,13 @@
   --color-btn-sec: var(--btn-sec);
   --color-accent: var(--accent);
   --color-btn-hover: var(--btn-hover);
+}
+
+.grad-one {background: #39FF14;
+  background: linear-gradient(156deg, rgba(57, 255, 20, 1) 41%, rgba(255, 107, 53, 1) 69%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
 }
 
 *,
@@ -72,9 +78,9 @@ p {
   font-size: clamp(0.875rem, 0.8rem + 0.2vw, 1rem);
   line-height: 1.5;
   max-width: 37ch;
-  white-space: nowrap;     
+  white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis; 
+  text-overflow: ellipsis;
 }
 
 .icon-lg {
@@ -96,7 +102,7 @@ select {
   padding: 0.5rem;
   border: 1px solid var(--color-txt-prime);
 
-  &>*{
+  & > * {
     width: 10px;
     border-radius: 10px;
   }

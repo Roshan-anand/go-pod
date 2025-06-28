@@ -1,12 +1,17 @@
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "@tanstack/react-router";
+import HeroSection from "@/components/landing/hero-section";
+// import Nav from "@/components/landing/nav";
+// import { Button } from "@/components/ui/button";
+// import { useNavigate } from "@tanstack/react-router";
 
 const Landing = () => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   return (
-    <main>
-      <h3>go to dashboard</h3>
-      <Button
+    <div className="bg-[#0B0909]">
+      <HeroSection />
+      {/* <Nav />
+      <main>
+        <h3>go to dashboard</h3>
+        <Button
         variant={"action"}
         onClick={() => {
           navigate({ to: "/dashboard" });
@@ -14,7 +19,8 @@ const Landing = () => {
       >
         Go to Dashboard
       </Button>
-    </main>
+      </main> */}
+    </div>
   );
 };
 
