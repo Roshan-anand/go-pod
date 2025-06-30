@@ -1,23 +1,14 @@
 import { useWrtcContext } from "@/providers/context/wRTC/config";
 import { useEffect } from "react";
+import usePodStore from "./podstore";
+import { useSelector } from "react-redux";
+import type { StateT } from "@/providers/redux/store";
 
 const useRecordingService = () => {
-  const { myScreen, myStream, isRecording } = useWrtcContext();
+  const { myScreen, myStream } = useWrtcContext();
+  const { isRecording } = useSelector((state: StateT) => state.room);
 
-  const sendChunks = (chunks: Blob, type: "cam" | "screen") => {
-    if (chunks.size === 0) return;
-
-    fetch((import.meta.env.VITE_BACKEND_URL = "/chunks"), {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        type,
-        chunks,
-      }),
-    });
-  };
+  const { uploadFile, startMultiPartUpload } = usePodStore();
 
   //to start recording users cam
   useEffect(() => {
@@ -33,7 +24,7 @@ const useRecordingService = () => {
 
     // on data available
     recorder.ondataavailable = (event) => {
-      if (event.data.size > 0) sendChunks(event.data, "cam");
+      if (event.data.size > 0) uploadFile(event.data, "cam");
     };
 
     recorder.onstop = () => {
@@ -42,15 +33,16 @@ const useRecordingService = () => {
 
     recorder.onstart = () => {
       console.log("cam Recording started");
+      startMultiPartUpload("cam");
     };
-    recorder.start(20000);
+    recorder.start();
 
     return () => {
       if (recorder.state === "recording") {
         recorder.stop();
       }
     };
-  }, [isRecording, myStream]);
+  }, [isRecording, myStream, uploadFile, startMultiPartUpload]);
 
   //to start recording users screen
   useEffect(() => {
@@ -66,7 +58,7 @@ const useRecordingService = () => {
 
     // on data available
     recorder.ondataavailable = (event) => {
-      if (event.data.size > 0) sendChunks(event.data, "screen");
+      if (event.data.size > 0) uploadFile(event.data, "screen");
     };
 
     recorder.onstop = () => {
@@ -75,15 +67,16 @@ const useRecordingService = () => {
 
     recorder.onstart = () => {
       console.log("screen Recording started");
+      startMultiPartUpload("screen");
     };
-    recorder.start(20000);
+    recorder.start();
 
     return () => {
       if (recorder.state === "recording") {
         recorder.stop();
       }
     };
-  }, [isRecording, myScreen]);
+  }, [isRecording, myScreen, uploadFile, startMultiPartUpload]);
 };
 
 export default useRecordingService;

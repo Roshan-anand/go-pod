@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from "react-redux";
 import type { StateT } from "../providers/redux/store";
 import { useEffect } from "react";
 import { toast } from "react-toastify";
-import { setPodRole, setRoomId } from "../providers/redux/slice/room";
+import { setHost, setPodRole, setRoomId } from "../providers/redux/slice/room";
 import { useNavigate } from "@tanstack/react-router";
 import { useWsContext } from "@/providers/context/socket/config";
 import type { WsData, wsEvent } from "@/lib/Type";
@@ -22,16 +22,16 @@ const useRoomService = (offer: () => Promise<void>) => {
     if (!socket) return;
     if (listeners.has("room:created")) return;
 
-    WsOn("room:created", (data: WsData) => {
-      const { roomID } = data;
+    WsOn("room:created", ({ roomID }: WsData) => {
       toast.success("Pod created successfully");
+      dispatch(setHost(email));
       dispatch(setRoomId(roomID));
     });
 
-    WsOn("room:joined", (data: WsData) => {
-      const { roomID } = data;
+    WsOn("room:joined", ({ roomID, host }: WsData) => {
       toast.success("Pod joined successfully");
       dispatch(setRoomId(roomID));
+      dispatch(setHost(host));
     });
 
     WsOn("room:checked", ({ exist }: WsData) => {
@@ -49,7 +49,7 @@ const useRoomService = (offer: () => Promise<void>) => {
       WsOff("room:joined");
       WsOff("room:checked");
     };
-  }, [socket, WsOn, WsOff, dispatch, navigate, listeners]);
+  }, [socket, WsOn, WsOff, dispatch, navigate, listeners, email]);
 
   //to emit create room
   const create = (studioID: string) => {

@@ -15,11 +15,13 @@ type proposal struct {
 }
 
 type studio struct {
-	name      string
-	clients   map[string]*Client
-	tracks    map[string]*proposal
-	sendTrack chan *webrtc.TrackLocalStaticRTP
-	sendProp  chan *proposal
+	name          string
+	host          string
+	recordingName string
+	clients       map[string]*Client
+	tracks        map[string]*proposal
+	sendTrack     chan *webrtc.TrackLocalStaticRTP
+	sendProp      chan *proposal
 }
 
 // it sets a unique reference for each proposal

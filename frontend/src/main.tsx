@@ -1,12 +1,12 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import "./index.css";
 import { Provider } from "react-redux";
 import { store } from "./providers/redux/store.ts";
 import { Bounce, ToastContainer } from "react-toastify";
 import App from "./App.tsx";
 import WrtcCtxtProvider from "./providers/context/wRTC/provider.tsx";
 import WsCtxtProvider from "./providers/context/socket/provider.tsx";
+import "@/styles/index.css"
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

@@ -14,6 +14,10 @@ import { BsCameraVideoFill, BsCameraVideoOffFill } from "react-icons/bs";
 import { HiSpeakerWave, HiSpeakerXMark } from "react-icons/hi2";
 import { LuScreenShare } from "react-icons/lu";
 import type { StreamT } from "@/lib/Type";
+import { useDispatch, useSelector } from "react-redux";
+import type { StateT } from "@/providers/redux/store";
+import { setIsRecording } from "@/providers/redux/slice/room";
+import { toast } from "react-toastify";
 
 //to show available audio and video devices and allow user to select them
 const SetupMedia = ({ stream }: { stream: StreamT }) => {
@@ -210,14 +214,21 @@ const ControlerScreenShare = () => {
 };
 
 const ControlerRecord = () => {
-  const { isRecording, setIsRecording } = useWrtcContext();
+  const dispatch = useDispatch();
+  const { isRecording, recordingName } = useSelector(
+    (state: StateT) => state.room
+  );
   return (
     <>
       <Button
         variant={"destructive"}
         className="flex gap-1"
         onClick={() => {
-          setIsRecording(!isRecording);
+          if (!recordingName) {
+            toast.error("Please set a valid recording name");
+            return;
+          }
+          dispatch(setIsRecording(!isRecording));
         }}
       >
         <FaRecordVinyl className="icon-sm" />

@@ -19,6 +19,7 @@ func (c *Client) createRoom(d *WsData[string]) {
 	c.hub.mu.Lock()
 	studio := &studio{
 		name:      studioID,
+		host:      email,
 		clients:   make(map[string]*Client),
 		tracks:    make(map[string]*proposal),
 		sendTrack: make(chan *webrtc.TrackLocalStaticRTP),
@@ -70,6 +71,7 @@ func (c *Client) joinRoom(d *WsData[string]) {
 
 	rData.Event = "room:joined"
 	rData.Data["roomID"] = roomID
+	rData.Data["host"] = studio.host
 	c.WsEmit(rData)
 }
 

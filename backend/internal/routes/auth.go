@@ -51,7 +51,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func AuthRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("GET /auth/user", getUser)
-	mux.HandleFunc("POST /auth/login", login)
+func AuthRoutes(m *http.ServeMux) {
+	m.HandleFunc("GET /auth/user", getUser)
+	m.HandleFunc("POST /auth/login", login)
 }

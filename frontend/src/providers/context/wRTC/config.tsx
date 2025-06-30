@@ -23,8 +23,6 @@ type contextT = {
   setVideoOpt: Dispatch<SetStateAction<MediaDeviceInfo[]>>;
   RtcState: RtcConnT;
   setRtcState: Dispatch<SetStateAction<RtcConnT>>;
-  isRecording: boolean;
-  setIsRecording: Dispatch<SetStateAction<boolean>>;
 };
 
 export const WrtcContext = createContext<contextT | null>(null);
