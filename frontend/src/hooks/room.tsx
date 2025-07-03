@@ -7,13 +7,13 @@ import { useNavigate } from "@tanstack/react-router";
 import { useWsContext } from "@/providers/context/socket/config";
 import type { WsData, wsEvent } from "@/lib/Type";
 
-const fallbackIce: RTCIceServer[] = [
-  { urls: "stun:stun.l.google.com:19302" },
-  { urls: "stun:stun1.l.google.com:19302" },
-  { urls: "stun:stun2.l.google.com:19302" },
-  { urls: "stun:stun3.l.google.com:19302" },
-  { urls: "stun:stun4.l.google.com:19302" },
-];
+// const fallbackIce: RTCIceServer[] = [
+//   { urls: "stun:stun.l.google.com:19302" },
+//   { urls: "stun:stun1.l.google.com:19302" },
+//   { urls: "stun:stun2.l.google.com:19302" },
+//   { urls: "stun:stun3.l.google.com:19302" },
+//   { urls: "stun:stun4.l.google.com:19302" },
+// ];
 
 //handles all the room emit and listen event's
 const useRoomService = (offer: (config: RTCConfiguration) => Promise<void>) => {
@@ -40,9 +40,9 @@ const useRoomService = (offer: (config: RTCConfiguration) => Promise<void>) => {
         })
       );
 
-
       const config: RTCConfiguration = {
-        iceServers: [iceInfo as RTCIceServer, ...fallbackIce],
+        // iceServers: [iceInfo as RTCIceServer, ...fallbackIce],
+        iceServers: [iceInfo as RTCIceServer],
         iceTransportPolicy: "all",
         iceCandidatePoolSize: 10,
       };
@@ -54,7 +54,8 @@ const useRoomService = (offer: (config: RTCConfiguration) => Promise<void>) => {
       dispatch(setRoomDetails({ roomID, host, recName }));
 
       const config: RTCConfiguration = {
-        iceServers: [iceInfo as RTCIceServer, ...fallbackIce],
+        // iceServers: [iceInfo as RTCIceServer, ...fallbackIce],
+        iceServers: [iceInfo as RTCIceServer],
         iceTransportPolicy: "all",
         iceCandidatePoolSize: 10,
       };

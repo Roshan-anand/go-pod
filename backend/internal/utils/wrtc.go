@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"log"
+	"fmt"
 	"os"
 
 	"github.com/pion/webrtc/v4"
@@ -23,13 +23,13 @@ func GetICEconfig() webrtc.ICEServer {
 	}
 	token, err := client.Api.CreateToken(params)
 	if err != nil {
-		log.Fatal("Failed to create token:", err)
+		fmt.Println("Failed to create token:", err)
 		return webrtc.ICEServer{}
 	}
 
 	var TwloIceS webrtc.ICEServer
 
-	TwloIceS.Credential = token.Password
+	TwloIceS.Credential = *token.Password
 	TwloIceS.Username = *token.Username
 	TwloIceS.URLs = make([]string, 0)
 

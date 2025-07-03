@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 
+	"github.com/Roshan-anand/go-pod/internal/config"
 	"github.com/Roshan-anand/go-pod/internal/utils"
 	"github.com/pion/webrtc/v4"
 )
@@ -17,21 +19,8 @@ const (
 	Negotiate ConnType = "negotiate"
 )
 
-// configuration for webrtc
-// contains the STUN server used for NAT traversal
-// and the ICE candidate pool size
-var config = webrtc.Configuration{
-	ICEServers: []webrtc.ICEServer{
-		{
-			URLs: []string{"stun:stun1.l.google.com:19302", "stun:stun2.l.google.com:19302"},
-		},
-	},
-	ICECandidatePoolSize: 10,
-}
-
 // to initialize a new offer
 func (c *Client) initOffer() {
-	fmt.Println(" negotiation needed for ", c.email)
 	sdp, err := c.peerC.CreateOffer(nil)
 	if err != nil {
 		fmt.Println("error while creating offer:", err)
@@ -67,7 +56,7 @@ func (c *Client) offer(d *WsData[string]) {
 	//decompress the sdp data
 	sdp, err := utils.DecompressD(compSdp)
 	if err != nil {
-		fmt.Println("error while decompressing sdp:", err)
+		log.Fatal("error while decompressing sdp:", err)
 		c.WsEmit(rErrData)
 		return
 	}
@@ -76,7 +65,7 @@ func (c *Client) offer(d *WsData[string]) {
 
 	if connT == string(Initial) {
 		// making a new peer connection
-		peerC, err = webrtc.NewPeerConnection(config)
+		peerC, err = webrtc.NewPeerConnection(config.WrtcConfig)
 		if err != nil {
 			c.WsEmit(rErrData)
 			return
@@ -145,7 +134,6 @@ func (c *Client) offer(d *WsData[string]) {
 					"kind":  prop.kind,
 				},
 			})
-			fmt.Printf("sending %s %s tracks to %s\n", prop.email, prop.track.Kind().String(), c.email)
 			peerC.AddTrack(prop.track)
 		}
 	} else {

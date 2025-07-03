@@ -115,7 +115,7 @@ func (c *Client) writePump() {
 func (c *Client) WsEmit(ev *RwsEv) {
 	data, err := json.Marshal(ev)
 	if err != nil {
-		log.Fatal("error while marshalling data:", err)
+		fmt.Println("error while marshalling data:", err)
 		return
 	}
 	c.send <- data

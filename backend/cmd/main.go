@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Roshan-anand/go-pod/internal/config"
 	"github.com/Roshan-anand/go-pod/internal/middleware"
 	"github.com/Roshan-anand/go-pod/internal/routes"
 	"github.com/Roshan-anand/go-pod/internal/socket"
@@ -13,9 +14,13 @@ import (
 func main() {
 	godotenv.Load()
 
+	config.SetIceConfig() // setting up the ICE configuration for WebRTC
+
+	// starting a new WebSocket hub
 	hub := socket.NewHub()
 	go hub.Run()
 
+	// setting up rotes
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
