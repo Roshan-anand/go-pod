@@ -1,10 +1,14 @@
 # to run go server
-server : 
+dev-server : 
 	@clear && \
 	cd backend && \
-	go mod tidy && \
-	go build -o server cmd/main.go && \
-	./server
+	pnpm dev
+
+prod-server : 
+	@clear && \
+	cd backend && \
+	pnpm build && \
+	pnpm start
 
 #to run react on dev mode
 dev-client :
