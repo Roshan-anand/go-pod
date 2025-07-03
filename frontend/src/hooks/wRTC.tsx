@@ -5,17 +5,7 @@ import { useWrtcContext } from "@/providers/context/wRTC/config";
 import type { Proposal, RemoteStreamT, WsData } from "@/lib/Type";
 import { compressSdp, decompressSdp } from "@/lib/utils";
 import { useDispatch } from "react-redux";
-import { setRoomId } from "@/providers/redux/slice/room";
-
-//wRTC server configuration
-const rtcConfig = {
-  iceServers: [
-    {
-      urls: ["stun:stun1.l.google.com:19302", "stun:stun2.l.google.com:19302"],
-    },
-  ],
-  iceCandidatePoolSize: 10,
-};
+import { setRoomDetails } from "@/providers/redux/slice/room";
 
 //handles all the wRTC emit and listen event's
 const useWrtcService = () => {
@@ -56,91 +46,95 @@ const useWrtcService = () => {
   );
 
   //to initialize wRTC connection offer to the joined client
-  const initOffer = useCallback(async () => {
-    if (!socket) return;
-    const peer = new RTCPeerConnection(rtcConfig);
+  const initOffer = useCallback(
+    async (config: RTCConfiguration) => {
+      if (!socket) return;
+      console.log(config);
+      const peer = new RTCPeerConnection(config);
 
-    //to send ICE candidate information to the connected peer
-    peer.onicecandidate = (e) => {
-      const candidate = e.candidate;
-      if (!candidate) return;
+      //to send ICE candidate information to the connected peer
+      peer.onicecandidate = (e) => {
+        const candidate = e.candidate;
+        if (!candidate) return;
 
-      WsEmit({
-        event: "ice",
-        data: {
-          ice: JSON.stringify(candidate),
-        },
-      });
-    };
-
-    //to track media streams of the connected peer
-    peer.ontrack = (e) => {
-      const stream = e.streams[0];
-      const id = stream.id;
-      const proposal = bufferedProp.current.get(id);
-      if (proposal) {
-        proposal.track = e.track;
-        SetTracks(proposal);
-        bufferedProp.current.delete(id);
-      } else {
-        bufferedProp.current.set(id, {
-          id,
-          email: null,
-          kind: null,
-          track: e.track,
-        });
-      }
-    };
-
-    //to send user's media stream to the connected peer
-    if (myStream) {
-      const send = (t: MediaStreamTrack, stream: MediaStream) => {
-        if (!peer) return;
         WsEmit({
-          event: "proposal",
+          event: "ice",
           data: {
-            id: t.id,
-            kind: "camera",
+            ice: JSON.stringify(candidate),
           },
         });
-        peer.addTrack(t, stream);
       };
-      myStream.audio.getTracks().forEach((track) => {
-        send(track, myStream.audio);
+
+      //to track media streams of the connected peer
+      peer.ontrack = (e) => {
+        const stream = e.streams[0];
+        const id = stream.id;
+        const proposal = bufferedProp.current.get(id);
+        if (proposal) {
+          proposal.track = e.track;
+          SetTracks(proposal);
+          bufferedProp.current.delete(id);
+        } else {
+          bufferedProp.current.set(id, {
+            id,
+            email: null,
+            kind: null,
+            track: e.track,
+          });
+        }
+      };
+
+      //to send user's media stream to the connected peer
+      if (myStream) {
+        const send = (t: MediaStreamTrack, stream: MediaStream) => {
+          if (!peer) return;
+          WsEmit({
+            event: "proposal",
+            data: {
+              id: t.id,
+              kind: "camera",
+            },
+          });
+          peer.addTrack(t, stream);
+        };
+        myStream.audio.getTracks().forEach((track) => {
+          send(track, myStream.audio);
+        });
+        myStream.video.getTracks().forEach((track) => {
+          send(track, myStream.video);
+        });
+      }
+
+      //to handle peer disconnection
+      peer.onconnectionstatechange = () => {
+        if (!peer) return;
+        const state = peer.connectionState;
+        if (state !== "disconnected") return;
+
+        peer.close();
+        setPeerC(null);
+        // setRemoteStreams((prev) => {
+        //   prev.delete(email);
+        //   return new Map(prev);
+        // });
+        toast.error(` disconnected from the room`);
+      };
+
+      //create offer and send it to the server
+      const sdp = await peer.createOffer();
+      await peer.setLocalDescription(new RTCSessionDescription(sdp));
+      setPeerC(peer);
+      const zipSdp = compressSdp(sdp.sdp as string); //compressed to reduce bandwidth usage
+      WsEmit({
+        event: "sdp:offer",
+        data: {
+          type: "initial",
+          sdp: zipSdp,
+        },
       });
-      myStream.video.getTracks().forEach((track) => {
-        send(track, myStream.video);
-      });
-    }
-
-    //to handle peer disconnection
-    peer.onconnectionstatechange = () => {
-      if (!peer) return;
-      const state = peer.connectionState;
-      if (state !== "disconnected") return;
-
-      peer.close();
-      setPeerC(null);
-      // setRemoteStreams((prev) => {
-      //   prev.delete(email);
-      //   return new Map(prev);
-      // });
-      toast.error(` disconnected from the room`);
-    };
-
-    //create offer and send it to the server
-    const sdp = await peer.createOffer();
-    await peer.setLocalDescription(new RTCSessionDescription(sdp));
-    setPeerC(peer);
-    const zipSdp = compressSdp(sdp.sdp as string); //compressed to reduce bandwidth usage
-    WsEmit({
-      event: "sdp:offer",
-      data: {
-        type: "initial",
-        sdp: zipSdp,
-      },
-    });
-  }, [SetTracks, WsEmit, myStream, setPeerC, socket]);
+    },
+    [SetTracks, WsEmit, myStream, setPeerC, socket]
+  );
 
   // to set offer and initialize answer
   const initAns = useCallback(
@@ -205,7 +199,7 @@ const useWrtcService = () => {
 
     WsOn("error:rtc", () => {
       toast.error("error occured in server");
-      dispatch(setRoomId(null));
+      dispatch(setRoomDetails({ roomID: null, host: null, recName: null }));
     });
 
     WsOn("proposal", ({ id, kind, email }: WsData) => {

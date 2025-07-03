@@ -2,13 +2,21 @@ import { useDispatch, useSelector } from "react-redux";
 import type { StateT } from "../providers/redux/store";
 import { useEffect } from "react";
 import { toast } from "react-toastify";
-import { setHost, setPodRole, setRoomId } from "../providers/redux/slice/room";
+import { setPodRole, setRoomDetails } from "../providers/redux/slice/room";
 import { useNavigate } from "@tanstack/react-router";
 import { useWsContext } from "@/providers/context/socket/config";
 import type { WsData, wsEvent } from "@/lib/Type";
 
+const fallbackIce: RTCIceServer[] = [
+  { urls: "stun:stun.l.google.com:19302" },
+  { urls: "stun:stun1.l.google.com:19302" },
+  { urls: "stun:stun2.l.google.com:19302" },
+  { urls: "stun:stun3.l.google.com:19302" },
+  { urls: "stun:stun4.l.google.com:19302" },
+];
+
 //handles all the room emit and listen event's
-const useRoomService = (offer: () => Promise<void>) => {
+const useRoomService = (offer: (config: RTCConfiguration) => Promise<void>) => {
   //hooks
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -22,16 +30,35 @@ const useRoomService = (offer: () => Promise<void>) => {
     if (!socket) return;
     if (listeners.has("room:created")) return;
 
-    WsOn("room:created", ({ roomID }: WsData) => {
+    WsOn("room:created", ({ roomID, recName, iceInfo }: WsData) => {
       toast.success("Pod created successfully");
-      dispatch(setHost(email));
-      dispatch(setRoomId(roomID));
+      dispatch(
+        setRoomDetails({
+          roomID,
+          host: email,
+          recName,
+        })
+      );
+
+
+      const config: RTCConfiguration = {
+        iceServers: [iceInfo as RTCIceServer, ...fallbackIce],
+        iceTransportPolicy: "all",
+        iceCandidatePoolSize: 10,
+      };
+      offer(config);
     });
 
-    WsOn("room:joined", ({ roomID, host }: WsData) => {
+    WsOn("room:joined", ({ roomID, host, recName, iceInfo }: WsData) => {
       toast.success("Pod joined successfully");
-      dispatch(setRoomId(roomID));
-      dispatch(setHost(host));
+      dispatch(setRoomDetails({ roomID, host, recName }));
+
+      const config: RTCConfiguration = {
+        iceServers: [iceInfo as RTCIceServer, ...fallbackIce],
+        iceTransportPolicy: "all",
+        iceCandidatePoolSize: 10,
+      };
+      offer(config);
     });
 
     WsOn("room:checked", ({ exist }: WsData) => {
@@ -44,26 +71,31 @@ const useRoomService = (offer: () => Promise<void>) => {
       }
     });
 
+    WsOn("room:error", ({ msg }: WsData) => {
+      toast.error(msg as string);
+    });
+
     return () => {
       WsOff("room:created");
       WsOff("room:joined");
       WsOff("room:checked");
+      WsOff("room:error");
     };
-  }, [socket, WsOn, WsOff, dispatch, navigate, listeners, email]);
+  }, [socket, WsOn, WsOff, dispatch, navigate, listeners, email, offer]);
 
   //to emit create room
-  const create = (studioID: string) => {
+  const create = (studioID: string, recName: string) => {
     if (!email || !name) return;
     const payload: wsEvent = {
       event: "create:room",
       data: {
         studioID,
+        recName,
         email,
         name,
       },
     };
     WsEmit(payload);
-    offer();
   };
 
   //to emit join room
@@ -78,7 +110,6 @@ const useRoomService = (offer: () => Promise<void>) => {
       },
     };
     WsEmit(payload);
-    offer();
   };
 
   //to emit check room
