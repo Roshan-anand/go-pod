@@ -10,7 +10,7 @@ export const StudioNav = () => {
   const { leaveStudio } = useStudio();
 
   return (
-    <nav className="flex items-center h-[10%] max-h-[5vh]">
+    <nav className="flex items-center h-[10%] max-h-[5vh] ">
       <button onClick={leaveStudio}>
         <IoChevronBack className="icon-md" />
       </button>

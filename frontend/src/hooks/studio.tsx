@@ -1,9 +1,9 @@
 import type { StateT } from "@/providers/redux/store";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-import { setRoomId } from "@/providers/redux/slice/room";
 import { useWrtcContext } from "@/providers/context/wRTC/config";
 import { useNavigate } from "@tanstack/react-router";
+import { setRoomDetails } from "@/providers/redux/slice/room";
 
 const useStudio = () => {
   const dispatch = useDispatch();
@@ -12,7 +12,8 @@ const useStudio = () => {
   const { myScreen, myStream, setMyStream, setMyScreen } = useWrtcContext();
 
   const leaveStudio = () => {
-    if (roomID) dispatch(setRoomId(null));
+    if (roomID)
+      dispatch(setRoomDetails({ roomID: null, host: null, recName: null }));
 
     //stop the local stream
     if (myStream) {

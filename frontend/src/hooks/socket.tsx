@@ -16,13 +16,11 @@ const useSocket = (conn: Dispatch<SetStateAction<boolean>>) => {
     };
 
     const wsOpen = () => {
-      console.log("socket is connected");
       conn(true);
       setSocket(ws);
     };
 
     const wsClose = () => {
-      console.log("socket is disconnected");
       conn(false);
       ws.close();
       reconnectTimer = setTimeout(connectWS, 4000);

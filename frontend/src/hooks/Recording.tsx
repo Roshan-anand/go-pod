@@ -1,82 +1,79 @@
 import { useWrtcContext } from "@/providers/context/wRTC/config";
-import { useEffect } from "react";
 import usePodStore from "./podstore";
-import { useSelector } from "react-redux";
-import type { StateT } from "@/providers/redux/store";
+import type { RecordingDevice, StreamT } from "@/lib/Type";
+import { useDispatch } from "react-redux";
+import { setIsRecording } from "@/providers/redux/slice/room";
+import { useRef } from "react";
 
 const useRecordingService = () => {
-  const { myScreen, myStream } = useWrtcContext();
-  const { isRecording } = useSelector((state: StateT) => state.room);
+  const dispatch = useDispatch();
+  const { recordingData } = useWrtcContext();
+  const { uploadFile, startMultiPartUpload, FinishMultipartUpload } =
+    usePodStore();
 
-  const { uploadFile, startMultiPartUpload } = usePodStore();
+  const bufferBlob = useRef<Record<RecordingDevice, Blob[]>>({
+    cam: [],
+    screen: [],
+  });
+  const bufferUpload = useRef<Record<RecordingDevice, Promise<void>[]>>({
+    cam: [],
+    screen: [],
+  });
 
-  //to start recording users cam
-  useEffect(() => {
-    if (!isRecording || !myStream) return;
+  const startRecording = (stream: StreamT, type: RecordingDevice) => {
+    const audio = stream.audio.getAudioTracks();
+    const video = stream.video.getVideoTracks();
+    const newStream = new MediaStream([...audio, ...video]);
 
-    const audio = myStream.audio.getAudioTracks();
-    const video = myStream.video.getVideoTracks();
-    const stream = new MediaStream([...audio, ...video]);
-
-    const recorder = new MediaRecorder(stream, {
+    const recorder = new MediaRecorder(newStream, {
       mimeType: "video/webm; codecs=vp9",
     });
+    recordingData.current[type].recorder = recorder;
 
     // on data available
     recorder.ondataavailable = (event) => {
-      if (event.data.size > 0) uploadFile(event.data, "cam");
+      const chunk = new Blob([...bufferBlob.current[type], event.data], {
+        type: event.data.type,
+      });
+      bufferBlob.current[type] = [];
+
+      if (chunk.size > 5000000)
+        bufferUpload.current[type].push(uploadFile(chunk, type));
+      else bufferBlob.current[type].push(chunk);
     };
 
-    recorder.onstop = () => {
-      console.log("cam Recording stopped");
+    recorder.onstop = async () => {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      if (bufferBlob.current[type].length > 0) {
+        const chunk = new Blob(bufferBlob.current[type], {
+          type: bufferBlob.current[type][0].type,
+        });
+        bufferUpload.current[type].push(uploadFile(chunk, type));
+        bufferBlob.current[type] = [];
+      }
+
+      await Promise.all(bufferUpload.current[type]);
+      bufferUpload.current[type] = [];
+      FinishMultipartUpload(type);
     };
 
     recorder.onstart = () => {
-      console.log("cam Recording started");
-      startMultiPartUpload("cam");
+      dispatch(setIsRecording(true));
+      startMultiPartUpload(type);
     };
-    recorder.start();
+    recorder.start(10000);
+  };
 
-    return () => {
-      if (recorder.state === "recording") {
-        recorder.stop();
-      }
-    };
-  }, [isRecording, myStream, uploadFile, startMultiPartUpload]);
+  const stopRecording = (type: RecordingDevice) => {
+    recordingData.current[type].recorder?.stop();
+    recordingData.current[type].recorder = null;
+  };
 
-  //to start recording users screen
-  useEffect(() => {
-    if (!isRecording || !myScreen) return;
-
-    const audio = myScreen.audio.getAudioTracks();
-    const video = myScreen.video.getVideoTracks();
-    const stream = new MediaStream([...audio, ...video]);
-
-    const recorder = new MediaRecorder(stream, {
-      mimeType: "video/webm; codecs=vp9",
-    });
-
-    // on data available
-    recorder.ondataavailable = (event) => {
-      if (event.data.size > 0) uploadFile(event.data, "screen");
-    };
-
-    recorder.onstop = () => {
-      console.log("screen Recording stopped");
-    };
-
-    recorder.onstart = () => {
-      console.log("screen Recording started");
-      startMultiPartUpload("screen");
-    };
-    recorder.start();
-
-    return () => {
-      if (recorder.state === "recording") {
-        recorder.stop();
-      }
-    };
-  }, [isRecording, myScreen, uploadFile, startMultiPartUpload]);
+  return {
+    startRecording,
+    stopRecording,
+  };
 };
 
 export default useRecordingService;

@@ -1,3 +1,5 @@
+import type { CompletedPart } from "@aws-sdk/client-s3";
+
 type WsVal =
   | string
   | RTCIceServer
@@ -29,12 +31,11 @@ export type Proposal = {
 export type RtcConnT = "initial" | "negotiate";
 
 export type RecordingDevice = "cam" | "screen";
-export type UploadChunk = { ETag: string; PartNumber: number };
 export type RecordingData = Record<
   RecordingDevice,
   {
     recorder: MediaRecorder | null;
     uploadingData: { Key: string; uploadID: string } | null;
-    uploadChunks: UploadChunk[];
+    uploadChunks: CompletedPart[];
   }
 >;

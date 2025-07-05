@@ -4,7 +4,12 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
-import type { RemoteStreamT, RtcConnT, StreamT } from "../../../lib/Type";
+import type {
+  RecordingData,
+  RemoteStreamT,
+  RtcConnT,
+  StreamT,
+} from "../../../lib/Type";
 
 type contextT = {
   peerC: RTCPeerConnection | null;
@@ -23,6 +28,7 @@ type contextT = {
   setVideoOpt: Dispatch<SetStateAction<MediaDeviceInfo[]>>;
   RtcState: RtcConnT;
   setRtcState: Dispatch<SetStateAction<RtcConnT>>;
+  recordingData: React.RefObject<RecordingData>;
 };
 
 export const WrtcContext = createContext<contextT | null>(null);

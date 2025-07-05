@@ -47,7 +47,6 @@ const useMediaChange = () => {
       send(track, myScreen.video);
     });
     negotiate();
-    console.log("screen share negotiation started");
   }, [myScreen, RtcState, WsEmit, peerC, negotiate]);
 };
 

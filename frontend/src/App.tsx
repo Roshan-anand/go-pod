@@ -8,7 +8,6 @@ declare module "@tanstack/react-router" {
 }
 
 const App = () => {
-  console.log("App is running");
   console.log(import.meta.env.VITE_BACKEND_URL);
   console.log(import.meta.env.VITE_BACKEND_WS_URL);
   return <RouterProvider router={router} />;

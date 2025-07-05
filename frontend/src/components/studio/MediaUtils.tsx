@@ -16,8 +16,9 @@ import { LuScreenShare } from "react-icons/lu";
 import type { StreamT } from "@/lib/Type";
 import { useDispatch, useSelector } from "react-redux";
 import type { StateT } from "@/providers/redux/store";
-import { setIsRecording } from "@/providers/redux/slice/room";
 import { toast } from "react-toastify";
+import useRecordingService from "@/hooks/Recording";
+import { setIsRecording } from "@/providers/redux/slice/room";
 
 //to show available audio and video devices and allow user to select them
 const SetupMedia = ({ stream }: { stream: StreamT }) => {
@@ -182,6 +183,7 @@ const ControlerSpeaker = ({ className }: { className?: string }) => {
 //to give control over screen share
 const ControlerScreenShare = () => {
   const { setMyScreen, setRtcState } = useWrtcContext();
+  const { startRecording, stopRecording } = useRecordingService();
 
   const handleScreenShare = async () => {
     const stream = await navigator.mediaDevices.getDisplayMedia({
@@ -198,10 +200,10 @@ const ControlerScreenShare = () => {
       streans.audio = new MediaStream([stream.getAudioTracks()[0]]);
 
     setMyScreen(streans);
-
+    startRecording(streans, "screen");
     stream.getVideoTracks()[0].addEventListener("ended", () => {
-      console.log("Screen share ended");
       setMyScreen(null);
+      stopRecording("screen");
     });
     setRtcState("negotiate");
   };
@@ -215,9 +217,12 @@ const ControlerScreenShare = () => {
 
 const ControlerRecord = () => {
   const dispatch = useDispatch();
+  const { myStream, myScreen } = useWrtcContext();
+  const { startRecording, stopRecording } = useRecordingService();
   const { isRecording, recordingName } = useSelector(
     (state: StateT) => state.room
   );
+
   return (
     <>
       <Button
@@ -228,7 +233,16 @@ const ControlerRecord = () => {
             toast.error("Please set a valid recording name");
             return;
           }
-          dispatch(setIsRecording(!isRecording));
+
+          if (isRecording) {
+            stopRecording("cam");
+            stopRecording("screen");
+            dispatch(setIsRecording(false));
+            return;
+          }
+
+          if (myStream) startRecording(myStream, "cam");
+          if (myScreen) startRecording(myScreen, "screen");
         }}
       >
         <FaRecordVinyl className="icon-sm" />
