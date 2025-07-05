@@ -64,7 +64,6 @@ const useRoomService = (offer: (config: RTCConfiguration) => Promise<void>) => {
 
     WsOn("room:checked", ({ exist }: WsData) => {
       if (exist) {
-        toast.success("You are one step closer to join the pod");
         dispatch(setPodRole("guest"));
       } else {
         toast.error("Invalid pod link");

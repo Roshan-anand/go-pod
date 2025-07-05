@@ -15,14 +15,13 @@ import { FcEndCall } from "react-icons/fc";
 import clsx from "clsx";
 import SideBar from "./SideBar";
 import useMediaChange from "@/hooks/MediaChange";
-import useRecordingService from "@/hooks/Recording";
 
 const Pod = () => {
   const { name } = useSelector((state: StateT) => state.user);
+  const { role } = useSelector((state: StateT) => state.room);
   const { remoteStreams, remoteScreens, myStream, myScreen } = useWrtcContext();
   const { leaveStudio } = useStudio();
   useMediaChange();
-  useRecordingService();
 
   const count = remoteStreams.size + 1;
   const columns = count == 1 ? 1 : count <= 3 ? 2 : Math.ceil(count / 2);
@@ -65,7 +64,7 @@ const Pod = () => {
         <figure className="h-[10%] mx-auto rounded-md mb-2 flex gap-3 items-center [&>*]:rounded-full [&>*]:p-3">
           {myStream && (
             <>
-              <ControlerRecord />
+              {role === "host" && <ControlerRecord />}
               <ControlerScreenShare />
               <ControlerCamera
                 stream={myStream.video}

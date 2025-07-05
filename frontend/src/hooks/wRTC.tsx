@@ -47,7 +47,6 @@ const useWrtcService = () => {
   //to initialize wRTC connection offer to the joined client
   const initOffer = async (config: RTCConfiguration) => {
     if (!socket) return;
-    console.log(config);
     const peer = new RTCPeerConnection(config);
 
     //to send ICE candidate information to the connected peer

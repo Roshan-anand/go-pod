@@ -22,6 +22,7 @@ func (c *Client) createRoom(d *WsData[string]) {
 		name:          studioID,
 		host:          email,
 		recordingName: recName,
+		isRecording:   false,
 		clients:       make(map[string]*Client),
 		tracks:        make(map[string]*proposal),
 		sendTrack:     make(chan *webrtc.TrackLocalStaticRTP),

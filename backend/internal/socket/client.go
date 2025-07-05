@@ -76,6 +76,8 @@ func (c *Client) readPump() {
 			c.ice(&evMsg.Data)
 		case "proposal":
 			c.proposal(&evMsg.Data)
+		case "record:send":
+			c.sendRecordAction()
 		default:
 			fmt.Println("other event received:", evMsg.Event)
 		}
@@ -141,7 +143,7 @@ func ServerWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256)}
+	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256), name: "", email: "", peerC: nil, flushTimer: nil}
 	client.hub.register <- client
 
 	go client.writePump()

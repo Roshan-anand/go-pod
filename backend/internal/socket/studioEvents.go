@@ -18,6 +18,7 @@ type studio struct {
 	name          string
 	host          string
 	recordingName string
+	isRecording   bool
 	clients       map[string]*Client
 	tracks        map[string]*proposal
 	sendTrack     chan *webrtc.TrackLocalStaticRTP
@@ -94,4 +95,19 @@ func (s *studio) studioTracksOrganize() {
 		}
 	}()
 
+}
+
+// to send record action to all clients
+func (c *Client) sendRecordAction() {
+	c.studio.isRecording = !c.studio.isRecording
+	for _, cl := range c.studio.clients {
+		if cl.email != c.email {
+			cl.WsEmit(&RwsEv{
+				Event: "record:receive",
+				Data: WsData[any]{
+					"action": c.studio.isRecording,
+				},
+			})
+		}
+	}
 }

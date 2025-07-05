@@ -2,6 +2,7 @@ import type { CompletedPart } from "@aws-sdk/client-s3";
 
 type WsVal =
   | string
+  | boolean
   | RTCIceServer
   | number
   | RTCSessionDescriptionInit

@@ -1,7 +1,6 @@
 package socket
 
 import (
-	"fmt"
 	"sync"
 )
 
@@ -28,13 +27,14 @@ func (h *Hub) Run() {
 		case c := <-h.register:
 			h.mu.Lock()
 			h.client[c] = true
-			fmt.Println("client connected", c.conn.RemoteAddr())
 			h.mu.Unlock()
 		case c := <-h.unregister:
 			h.mu.Lock()
 			delete(h.client, c)
+			if c.email != "" {
+				delete(c.studio.clients, c.email)
+			}
 			c.conn.Close()
-			fmt.Println("client disconnected", c.conn.RemoteAddr())
 			h.mu.Unlock()
 		}
 	}

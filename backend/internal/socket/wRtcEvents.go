@@ -82,7 +82,12 @@ func (c *Client) offer(d *WsData[string]) {
 		// on ICE candidate gathering
 		peerC.OnICECandidate(func(i *webrtc.ICECandidate) {
 			if i == nil {
-				fmt.Println("ICE candidate gathering complete")
+				c.WsEmit(&RwsEv{
+					Event: "record:receive",
+					Data: WsData[any]{
+						"action": c.studio.isRecording,
+					},
+				})
 				return
 			}
 

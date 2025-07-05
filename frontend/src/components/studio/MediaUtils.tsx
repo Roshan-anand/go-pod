@@ -13,12 +13,11 @@ import { FaRecordVinyl } from "react-icons/fa";
 import { BsCameraVideoFill, BsCameraVideoOffFill } from "react-icons/bs";
 import { HiSpeakerWave, HiSpeakerXMark } from "react-icons/hi2";
 import { LuScreenShare } from "react-icons/lu";
-import type { StreamT } from "@/lib/Type";
-import { useDispatch, useSelector } from "react-redux";
+import type { StreamT, wsEvent } from "@/lib/Type";
+import { useSelector } from "react-redux";
 import type { StateT } from "@/providers/redux/store";
-import { toast } from "react-toastify";
 import useRecordingService from "@/hooks/Recording";
-import { setIsRecording } from "@/providers/redux/slice/room";
+import { useWsContext } from "@/providers/context/socket/config";
 
 //to show available audio and video devices and allow user to select them
 const SetupMedia = ({ stream }: { stream: StreamT }) => {
@@ -216,33 +215,21 @@ const ControlerScreenShare = () => {
 };
 
 const ControlerRecord = () => {
-  const dispatch = useDispatch();
-  const { myStream, myScreen } = useWrtcContext();
-  const { startRecording, stopRecording } = useRecordingService();
-  const { isRecording, recordingName } = useSelector(
-    (state: StateT) => state.room
-  );
-
+  const { isRecording } = useSelector((state: StateT) => state.room);
+  const { WsEmit } = useWsContext();
+  const { recordAction } = useRecordingService();
   return (
     <>
       <Button
         variant={"destructive"}
         className="flex gap-1"
         onClick={() => {
-          if (!recordingName) {
-            toast.error("Please set a valid recording name");
-            return;
-          }
-
-          if (isRecording) {
-            stopRecording("cam");
-            stopRecording("screen");
-            dispatch(setIsRecording(false));
-            return;
-          }
-
-          if (myStream) startRecording(myStream, "cam");
-          if (myScreen) startRecording(myScreen, "screen");
+          const payload: wsEvent = {
+            event: "record:send",
+            data: {},
+          };
+          recordAction();
+          WsEmit(payload);
         }}
       >
         <FaRecordVinyl className="icon-sm" />
