@@ -38,7 +38,7 @@ const useStudio = () => {
       });
       setMyScreen(null);
     }
-    navigate({ to: "/dashboard" });
+    navigate({ to: "/dashboard/home" });
   };
 
   return { leaveStudio };

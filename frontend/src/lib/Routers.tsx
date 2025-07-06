@@ -2,13 +2,15 @@ import {
   createRouter,
   createRoute,
   createRootRoute,
+  redirect,
 } from "@tanstack/react-router";
 import Studio from "@/pages/Studio";
 import NotFound from "@/NotFound";
 import Login from "@/pages/Login";
-import Loading from "@/Loading";
-import Home from "../pages/Home";
 import Landing from "@/pages/Landing";
+import Dashboard from "@/pages/Dashboard";
+import Projects from "@/components/dashboard/Projects";
+import Home from "@/components/dashboard/home";
 
 const rootRoute = createRootRoute();
 
@@ -16,21 +18,40 @@ const langingRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/",
   component: () => <Landing />,
-  loader: Loading,
 });
 
-const homeRoute = createRoute({
+const dashboardRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/dashboard",
+  component: () => <Dashboard />,
+});
+
+const dashboardIndexRoute = createRoute({
+  getParentRoute: () => dashboardRoute,
+  path: "/",
+  loader: () => {
+    throw redirect({
+      to: "/dashboard/home",
+    });
+  },
+});
+
+const dashboardHomeRoute = createRoute({
+  getParentRoute: () => dashboardRoute,
+  path: "/home",
   component: () => <Home />,
-  loader: Loading,
+});
+
+const dashboardProjectsRoute = createRoute({
+  getParentRoute: () => dashboardRoute,
+  path: "/projects",
+  component: () => <Projects />,
 });
 
 const roomRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/studio/$studioID",
   component: () => <Studio />,
-  loader: Loading,
 });
 
 const loginRouter = createRoute({
@@ -41,7 +62,11 @@ const loginRouter = createRoute({
 
 const routeTree = rootRoute.addChildren([
   langingRoute,
-  homeRoute,
+  dashboardRoute.addChildren([
+    dashboardHomeRoute,
+    dashboardProjectsRoute,
+    dashboardIndexRoute,
+  ]),
   roomRoute,
   loginRouter,
 ]);

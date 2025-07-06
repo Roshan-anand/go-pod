@@ -32,7 +32,7 @@ export default function HeroSection() {
                   <button
                     className="px-5 py-2 border border-btn-sec hover-anim rounded-sm"
                     onClick={() => {
-                      navigate({ to: "/dashboard" });
+                      navigate({ to: "/dashboard/home" });
                     }}
                   >
                     <p className="text">Start Recording</p>
