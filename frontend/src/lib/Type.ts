@@ -19,12 +19,14 @@ export type wsEvent = {
 export type StreamT = {
   audio: MediaStream;
   video: MediaStream;
+  name: string;
 };
 export type RemoteStreamT = Map<string, StreamT>;
 
 export type Proposal = {
   id: string;
   email: string | null;
+  name: string | null;
   kind: string | null;
   track: MediaStreamTrack | null;
 };

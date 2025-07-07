@@ -137,6 +137,7 @@ func (c *Client) offer(d *WsData[string]) {
 					"id":    prop.id,
 					"email": prop.email,
 					"kind":  prop.kind,
+					"name":  prop.name,
 				},
 			})
 			peerC.AddTrack(prop.track)
@@ -227,6 +228,7 @@ func (c *Client) proposal(d *WsData[string]) {
 	prop := &proposal{
 		id:    id,
 		email: c.email,
+		name:c.name,
 		kind:  kind,
 	}
 	c.studio.sendProp <- prop

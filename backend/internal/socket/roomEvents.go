@@ -20,7 +20,8 @@ func (c *Client) createRoom(d *WsData[string]) {
 	c.hub.mu.Lock()
 	studio := &studio{
 		name:          studioID,
-		host:          email,
+		hostName:      name,
+		hostEmail:     email,
 		recordingName: recName,
 		isRecording:   false,
 		clients:       make(map[string]*Client),
@@ -83,7 +84,8 @@ func (c *Client) joinRoom(d *WsData[string]) {
 
 	rData.Event = "room:joined"
 	rData.Data["roomID"] = roomID
-	rData.Data["host"] = studio.host
+	rData.Data["name"] = studio.hostName
+	rData.Data["email"] = studio.hostEmail
 	rData.Data["recName"] = studio.recordingName
 	rData.Data["iceInfo"] = iceInfo
 	c.WsEmit(rData)
@@ -110,5 +112,7 @@ func (c *Client) checkRoom(d *WsData[string]) {
 	c.hub.mu.Unlock()
 
 	rData.Data["exist"] = true
+	rData.Data["name"] = studio.hostName
+
 	c.WsEmit(rData)
 }

@@ -18,7 +18,7 @@ const useWrtcService = () => {
   const bufferedProp = useRef<Map<string, Proposal>>(new Map());
 
   const SetTracks = useCallback(
-    ({ email, kind, track }: Proposal) => {
+    ({ email, kind, track, name }: Proposal) => {
       if (!email || !track) return;
 
       const add = (prev: RemoteStreamT) => {
@@ -28,6 +28,7 @@ const useWrtcService = () => {
           newR.set(email, {
             audio: new MediaStream(),
             video: new MediaStream(),
+            name: name!,
           });
 
         const client = newR.get(email);
@@ -76,6 +77,7 @@ const useWrtcService = () => {
           id,
           email: null,
           kind: null,
+          name: null,
           track: e.track,
         });
       }
@@ -194,21 +196,25 @@ const useWrtcService = () => {
 
     WsOn("error:rtc", () => {
       toast.error("error occured in server");
-      dispatch(setRoomDetails({ roomID: null, host: null, recName: null }));
+      dispatch(
+        setRoomDetails({ roomID: null, name: null, email: null, recName: null })
+      );
     });
 
-    WsOn("proposal", ({ id, kind, email }: WsData) => {
+    WsOn("proposal", ({ id, kind, email, name }: WsData) => {
       id = id as string;
       kind = kind as string;
       email = email as string;
+      name = name as string;
       const proposal = bufferedProp.current.get(id);
       if (proposal) {
         proposal.kind = kind;
         proposal.email = email;
+        proposal.name = name;
         SetTracks(proposal);
         bufferedProp.current.delete(id);
       } else {
-        bufferedProp.current.set(id, { id, kind, email, track: null });
+        bufferedProp.current.set(id, { id, kind, email, name, track: null });
       }
     });
 

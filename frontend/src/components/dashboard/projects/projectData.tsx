@@ -3,9 +3,28 @@ import { Button } from "../../ui/button";
 import { FaVideo } from "react-icons/fa6";
 import { FaPlus, FaShareSquare } from "react-icons/fa";
 import { BiCut } from "react-icons/bi";
-import { PiExportBold } from "react-icons/pi";
+import { PiExportBold, PiLaptopThin } from "react-icons/pi";
 import { IoMdDownload } from "react-icons/io";
+import { CiCamera } from "react-icons/ci";
 import type { RecordsData } from "@/lib/Type";
+
+const DeviceInfo = ({
+  device,
+  className,
+}: {
+  device: string;
+  className?: string;
+}) => {
+  return (
+    <div className={`bg-btn-hover p-[2px] text-btn-sec size-full ${className}`}>
+      {device === "cam" ? (
+        <CiCamera className="size-full" />
+      ) : (
+        <PiLaptopThin className="size-full" />
+      )}
+    </div>
+  );
+};
 
 const ProjectData = ({ data, path }: { data: RecordsData[]; path: string }) => {
   const [currentVideo, setCurrentVideo] = useState<RecordsData | null>(null);
@@ -30,13 +49,21 @@ const ProjectData = ({ data, path }: { data: RecordsData[]; path: string }) => {
       </header>
       {data.length > 0 ? (
         <>
-          <section className="h-[40%] w-[65%] max-h-[550px] max-w-[600px]  bg-btn-prime rounded-md flex justify-center items-center">
+          <section className="h-[40%] w-[65%] max-h-[550px] max-w-[600px]  bg-btn-prime rounded-md flex justify-center items-center relative">
             {currentVideo ? (
-              <video
-                src={currentVideo.url}
-                className="size-full object-cover rounded-md"
-                controls
-              />
+              <>
+                <video
+                  src={currentVideo.url}
+                  className="size-full object-cover rounded-md"
+                  controls
+                />
+                <div className="absolute w-[10%] -top-[2px] -right-[10px]">
+                  <DeviceInfo
+                    device={currentVideo.device}
+                    className="rounded-lg"
+                  />
+                </div>
+              </>
             ) : (
               <FaVideo className="icon-lg text-accent" />
             )}
@@ -76,14 +103,20 @@ const ProjectData = ({ data, path }: { data: RecordsData[]; path: string }) => {
               <Button
                 key={index}
                 variant={"prime"}
-                className="max-h-[85px] p-2 overflow-hidden"
+                className="max-h-[85px] p-2 overflow-hidden gap-2"
                 onClick={() => setCurrentVideo(item)}
               >
-                <video
-                  src={item.url}
-                  className="w-[10%] h-full max-w-[85px] object-cover object-top rounded-md"
-                />
+                <div className="relative w-[10%] h-full max-w-[85px]">
+                  <video
+                    src={item.url}
+                    className="size-full object-cover object-top rounded-md"
+                  ></video>
+                  <div className="absolute size-[30%] -bottom-[2px] -right-[2px]">
+                    <DeviceInfo device={item.device} className="rounded-full" />
+                  </div>
+                </div>
                 <p>{item.name}</p>
+                <p>{item.device}</p>
                 <Button variant={"action"} className="ml-auto">
                   <IoMdDownload className="icon-sm" />
                 </Button>

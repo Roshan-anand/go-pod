@@ -35,7 +35,8 @@ const useRoomService = (offer: (config: RTCConfiguration) => Promise<void>) => {
       dispatch(
         setRoomDetails({
           roomID,
-          host: email,
+          name,
+          email,
           recName,
         })
       );
@@ -49,9 +50,9 @@ const useRoomService = (offer: (config: RTCConfiguration) => Promise<void>) => {
       offer(config);
     });
 
-    WsOn("room:joined", ({ roomID, host, recName, iceInfo }: WsData) => {
+    WsOn("room:joined", ({ roomID, name, email, recName, iceInfo }: WsData) => {
       toast.success("Pod joined successfully");
-      dispatch(setRoomDetails({ roomID, host, recName }));
+      dispatch(setRoomDetails({ roomID, name, email, recName }));
 
       const config: RTCConfiguration = {
         // iceServers: [iceInfo as RTCIceServer, ...fallbackIce],
@@ -62,9 +63,12 @@ const useRoomService = (offer: (config: RTCConfiguration) => Promise<void>) => {
       offer(config);
     });
 
-    WsOn("room:checked", ({ exist }: WsData) => {
+    WsOn("room:checked", ({ exist, name }: WsData) => {
       if (exist) {
         dispatch(setPodRole("guest"));
+        dispatch(
+          setRoomDetails({ roomID: null, name, email: null, recName: null })
+        );
       } else {
         toast.error("Invalid pod link");
         navigate({ to: "/" });
@@ -81,7 +85,7 @@ const useRoomService = (offer: (config: RTCConfiguration) => Promise<void>) => {
       WsOff("room:checked");
       WsOff("room:error");
     };
-  }, [socket, WsOn, WsOff, dispatch, navigate, listeners, email, offer]);
+  }, [socket, WsOn, WsOff, dispatch, navigate, listeners, email, offer, name]);
 
   //to emit create room
   const create = (studioID: string, recName: string) => {

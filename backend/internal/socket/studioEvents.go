@@ -10,13 +10,15 @@ import (
 type proposal struct {
 	id    string
 	email string
+	name  string
 	kind  string
 	track *webrtc.TrackLocalStaticRTP
 }
 
 type studio struct {
 	name          string
-	host          string
+	hostName          string
+	hostEmail         string
 	recordingName string
 	isRecording   bool
 	clients       map[string]*Client
@@ -35,6 +37,7 @@ func (s *studio) studioTracksDistribute(prop *proposal) {
 				Data: WsData[any]{
 					"id":    prop.id,
 					"email": prop.email,
+					"name":  prop.name,
 					"kind":  prop.kind,
 				},
 			})
@@ -68,6 +71,7 @@ func (s *studio) studioTracksOrganize() {
 				t.email = prop.email
 				t.kind = prop.kind
 				t.track = prop.track
+				t.name = prop.name
 				s.studioTracksDistribute(t)
 				delete(tracks, id)
 			} else {

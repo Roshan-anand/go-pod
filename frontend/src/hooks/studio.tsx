@@ -13,7 +13,9 @@ const useStudio = () => {
 
   const leaveStudio = () => {
     if (roomID)
-      dispatch(setRoomDetails({ roomID: null, host: null, recName: null }));
+      dispatch(
+        setRoomDetails({ roomID: null, name: null, email: null, recName: null })
+      );
 
     //stop the local stream
     if (myStream) {

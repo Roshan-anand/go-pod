@@ -38,6 +38,7 @@ const SetupMedia = ({ stream }: { stream: StreamT }) => {
     setMyStream({
       audio: new MediaStream([newAudioTrack]),
       video: new MediaStream([currentVideoTrack]),
+      name: "you",
     });
   };
 
@@ -55,6 +56,7 @@ const SetupMedia = ({ stream }: { stream: StreamT }) => {
     setMyStream({
       audio: new MediaStream([currentAudioTrack]),
       video: new MediaStream([newVideoTrack]),
+      name: "you",
     });
   };
 
@@ -183,7 +185,7 @@ const ControlerSpeaker = ({ className }: { className?: string }) => {
 const ControlerScreenShare = () => {
   const { setMyScreen, setRtcState } = useWrtcContext();
   const { startRecording, stopRecording } = useRecordingService();
-
+  const { isRecording } = useSelector((state: StateT) => state.room);
   const handleScreenShare = async () => {
     const stream = await navigator.mediaDevices.getDisplayMedia({
       video: true,
@@ -193,13 +195,14 @@ const ControlerScreenShare = () => {
     const streans: StreamT = {
       video: new MediaStream([stream.getVideoTracks()[0]]),
       audio: new MediaStream(),
+      name: "you",
     };
 
     if (stream.getAudioTracks()[0])
       streans.audio = new MediaStream([stream.getAudioTracks()[0]]);
 
     setMyScreen(streans);
-    startRecording(streans, "screen");
+    if (isRecording) startRecording(streans, "screen");
     stream.getVideoTracks()[0].addEventListener("ended", () => {
       setMyScreen(null);
       stopRecording("screen");

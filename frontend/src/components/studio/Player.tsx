@@ -4,12 +4,10 @@ import type { StreamT } from "@/lib/Type";
 
 const Player = ({
   stream,
-  user,
   className,
   vdCls,
 }: {
   stream: StreamT | null;
-  user: string;
   className?: string;
   vdCls?: string;
 }) => {
@@ -33,14 +31,14 @@ const Player = ({
             muted
             className={`size-full  rounded-md object-cover transform scale-x-[-1] ${vdCls}`}
           />
-          {user !== "you" && <audio ref={audioRef} autoPlay />}
+          {stream.name !== "you" && <audio ref={audioRef} autoPlay />}
         </>
       ) : (
         <div className="size-[200px] rounded-md bg-orange-300 flex items-center justify-center">
           <BiUser className="icon-lg border-4 rounded-full" />
         </div>
       )}
-      <p className="absolute bottom-0 m-2 font-bold ">{user}</p>
+      <p className="absolute bottom-0 m-2 font-bold ">{stream?.name}</p>
     </figure>
   );
 };

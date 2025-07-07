@@ -3,7 +3,8 @@ import { createSlice } from "@reduxjs/toolkit";
 type InitialT = {
   roomID: string | null;
   studioID: string | null;
-  host: string | null;
+  hostName: string | null;
+  hostEmail: string | null;
   role: "host" | "guest" | null;
   recordingName: string | null;
   isRecording: boolean;
@@ -12,7 +13,8 @@ type InitialT = {
 const initialState: InitialT = {
   roomID: null,
   studioID: null,
-  host: null,
+  hostName: null,
+  hostEmail: null,
   role: null,
   recordingName: null,
   isRecording: false,
@@ -23,9 +25,10 @@ const UserSlice = createSlice({
   initialState,
   reducers: {
     setRoomDetails: (state, action) => {
-      const { roomID, host, recName } = action.payload;
+      const { roomID, name, email, recName } = action.payload;
       state.roomID = roomID;
-      state.host = host;
+      state.hostName = name;
+      state.hostEmail = email;
       state.recordingName = recName;
     },
     setStudioId: (state, action) => {

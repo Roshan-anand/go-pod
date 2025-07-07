@@ -37,13 +37,15 @@ const Projects = () => {
             const stream = data.Body as ReadableStream<Uint8Array>;
             const blob = await new Response(stream).blob();
             const blobUrl = URL.createObjectURL(blob);
-            console.log(blobUrl);
             const date = `${item.LastModified?.getDate()} / ${item.LastModified?.getMonth()} / ${item.LastModified?.getFullYear()}`;
+
+            const user = item.Key!.split("/")[2].split(".webm")[0].split("-");
+
             const recordData: RecordsData = {
               url: blobUrl,
               createdAt: date,
-              name: item.Key?.split("/")[2] || "",
-              device: "cam",
+              name: user[1],
+              device: user[2],
             };
 
             setRecordDatas((prevUrls) => [...prevUrls, recordData]);

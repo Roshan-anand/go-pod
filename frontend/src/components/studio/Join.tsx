@@ -5,7 +5,11 @@ import { Button } from "../ui/button";
 import { SetupMedia } from "./MediaUtils";
 import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
 import { CheckStudioID } from "@/lib/utils";
-import { setPodRole, setStudioId } from "@/providers/redux/slice/room";
+import {
+  setPodRole,
+  setRoomDetails,
+  setStudioId,
+} from "@/providers/redux/slice/room";
 import { useDispatch, useSelector } from "react-redux";
 import type { StateT } from "@/providers/redux/store";
 import Loading from "@/Loading";
@@ -40,9 +44,10 @@ const Join = ({
     if (CheckStudioID(studioID, email)) {
       dispatch(setStudioId(studioID));
       dispatch(setPodRole("host"));
+      dispatch(setRoomDetails({ roomID: null, recName: null, name, email }));
     } else if (rID) checkRoom(rID, studioID);
     else navigate({ to: "/" });
-  }, [studioID, checkRoom, email, dispatch, navigate, rID]);
+  }, [studioID, checkRoom, email, dispatch, navigate, rID, name]);
 
   const inpRef = useRef<HTMLInputElement>(null);
 
@@ -87,10 +92,14 @@ const Join = ({
               </Button>
             )}
           </figure>
-          <figure className={`${myStream && "bg-btn-hover"} rounded-md p-2 w-1/2 max-w-[350px]`}>
+          <figure
+            className={`${
+              myStream && "bg-btn-hover"
+            } rounded-md p-2 w-1/2 max-w-[350px]`}
+          >
             {myStream ? (
               <>
-                <Player stream={myStream} user="you" />
+                <Player stream={myStream} />
                 <SetupMedia stream={myStream} />
               </>
             ) : (

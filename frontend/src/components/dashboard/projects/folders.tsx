@@ -13,7 +13,7 @@ const ProjectFolders = ({
   setPath: React.Dispatch<SetStateAction<string>>;
   getProjects: (path: string) => Promise<void>;
 }) => {
-  const { email } = useSelector((state: StateT) => state.user);
+  const { email, name } = useSelector((state: StateT) => state.user);
   const Bucket = import.meta.env.VITE_S3_BUCKET_NAME as string;
 
   const [dataAvailable, setDataAvailable] = useState(false);
@@ -24,7 +24,7 @@ const ProjectFolders = ({
   // if the user has not created any project, then it will return empty array
   useEffect(() => {
     if (!email || dataAvailable) return;
-    const getProjects = async () => {
+    const getProjectsList = async () => {
       const cmd = new ListObjectsV2Command({
         Bucket,
         Prefix: `${email}/`,
@@ -48,11 +48,11 @@ const ProjectFolders = ({
       }
     };
 
-    getProjects();
-  }, [email, Bucket, dataAvailable, setDataAvailable]);
+    getProjectsList();
+  }, [email, Bucket, dataAvailable, setDataAvailable, name]);
 
   return (
-    <figure className="flex size-full">
+    <figure className="flex size-full gap-3">
       {projectFolder.current &&
         Object.entries(projectFolder.current).map(([name, date]) => (
           <Button

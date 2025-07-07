@@ -17,7 +17,6 @@ import SideBar from "./SideBar";
 import useMediaChange from "@/hooks/MediaChange";
 
 const Pod = () => {
-  const { name } = useSelector((state: StateT) => state.user);
   const { role } = useSelector((state: StateT) => state.room);
   const { remoteStreams, remoteScreens, myStream, myScreen } = useWrtcContext();
   const { leaveStudio } = useStudio();
@@ -42,23 +41,16 @@ const Pod = () => {
         <figure className={`grow max-h-[90%] p-5 grid  gap-1 ${gridCols}`}>
           <Player
             stream={myStream}
-            user={"you"}
             className={`${
               count % 2 !== 0 ? "row-span-2" : ""
             } border-2 border-accent`}
           />
-          {myScreen && (
-            <Player
-              stream={myScreen}
-              vdCls="scale-x-[1]"
-              user={`${name} (screen)`}
-            />
-          )}
+          {myScreen && <Player stream={myScreen} vdCls="scale-x-[1]" />}
           {Array.from(remoteStreams.entries()).map(([email, stream]) => (
-            <Player stream={stream} user={email} key={email} />
+            <Player stream={stream} key={email} />
           ))}
           {Array.from(remoteScreens.entries()).map(([email, stream]) => (
-            <Player stream={stream} user={email} key={email} />
+            <Player stream={stream} key={email} />
           ))}
         </figure>
         <figure className="h-[10%] mx-auto rounded-md mb-2 flex gap-3 items-center [&>*]:rounded-full [&>*]:p-3">

@@ -15,8 +15,10 @@ import { toast } from "react-toastify";
 //upload folder structure: host/recording-name/useremail-type.webm
 const usePodStore = () => {
   const dispatch = useDispatch();
-  const { host, recordingName } = useSelector((state: StateT) => state.room);
-  const { email } = useSelector((state: StateT) => state.user);
+  const { hostEmail, recordingName } = useSelector(
+    (state: StateT) => state.room
+  );
+  const { email, name } = useSelector((state: StateT) => state.user);
   const { recordingData } = useWrtcContext();
 
   const Bucket = import.meta.env.VITE_S3_BUCKET_NAME as string;
@@ -25,9 +27,9 @@ const usePodStore = () => {
   // for uploading small chunks of data
   // to avoid timeout and large file size issues
   const startMultiPartUpload = async (type: RecordingDevice) => {
-    if (!host || !recordingName || !email) return;
+    if (!hostEmail || !recordingName || !email) return;
 
-    const Key = `${host}/${recordingName}/${email}-${type}.webm`;
+    const Key = `${hostEmail}/${recordingName}/${email}-${name}-${type}.webm`;
     const cmd = new CreateMultipartUploadCommand({
       Bucket,
       Key,
@@ -85,7 +87,9 @@ const usePodStore = () => {
   const FinishMultipartUpload = async (type: RecordingDevice) => {
     const Key = recordingData.current[type].uploadingData?.Key;
     const UploadId = recordingData.current[type].uploadingData?.uploadID;
-    const Parts = recordingData.current[type].uploadChunks;
+    const Parts = recordingData.current[type].uploadChunks.sort(
+      (a, b) => a.PartNumber! - b.PartNumber!
+    );
 
     if (!Key || !UploadId || Parts.length === 0) {
       console.error("Missing key, upload ID, or parts", Key, UploadId, Parts);
