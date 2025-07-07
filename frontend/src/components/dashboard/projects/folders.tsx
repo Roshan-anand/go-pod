@@ -1,5 +1,5 @@
 import { CiFolderOn } from "react-icons/ci";
-import { Button } from "../ui/button";
+import { Button } from "../../ui/button";
 import { podStore } from "@/config/s3client";
 import type { StateT } from "@/providers/redux/store";
 import { ListObjectsV2Command } from "@aws-sdk/client-s3";
@@ -52,7 +52,7 @@ const ProjectFolders = ({
   }, [email, Bucket, dataAvailable, setDataAvailable]);
 
   return (
-    <figure className="flex ">
+    <figure className="flex size-full">
       {projectFolder.current &&
         Object.entries(projectFolder.current).map(([name, date]) => (
           <Button
@@ -62,7 +62,7 @@ const ProjectFolders = ({
             }}
             variant={"prime"}
             key={name}
-            className="w-1/3 max-w-[180px] relative flex flex-col"
+            className="w-1/3 max-w-[180px] relative flex flex-col h-fit"
           >
             <CiFolderOn className="size-full" />
             <h6 className="absolute top-1/2 left-1/2 -translate-1/2 text-[0.8rem]">

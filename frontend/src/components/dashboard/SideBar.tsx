@@ -39,7 +39,7 @@ const SideBar = () => {
   };
 
   return (
-    <aside className={`min-w-[70px] flex flex-col gap-4`}>
+    <aside className={` min-w-[70px] ${!isCollapsed && "min-w-[210px]"}  flex flex-col gap-4`}>
       <header className="mt-3 px-2 flex justify-evenly items-center">
         {!isCollapsed && (
           <>

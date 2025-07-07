@@ -16,7 +16,7 @@ const Home = () => {
   };
   return (
     <>
-      <figure className="grow flex justify-center items-center">
+      <figure className="size-full flex justify-center items-center">
         <Button
           variant={"action"}
           className="flex gap-1"

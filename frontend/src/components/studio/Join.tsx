@@ -47,10 +47,10 @@ const Join = ({
   const inpRef = useRef<HTMLInputElement>(null);
 
   return (
-    <section className="grow flex justify-center items-center gap-3 px-3">
+    <section className="grow flex justify-center items-center gap-3 lx:gap-10 px-3 ">
       {role ? (
         <>
-          <figure className="flex flex-col gap-3 px-3 w-1/2 max-w-[350px] ">
+          <figure className="flex flex-col gap-3 px-3 w-fit">
             <p className="text-txt-sec">your about to join the users's pod</p>
             <h3 className="border-b-2">Just one step away</h3>
             <p className="flex justify-between items-center py-2 px-3 gap-3 bg-bg-sec rounded-md">
@@ -87,14 +87,16 @@ const Join = ({
               </Button>
             )}
           </figure>
-          {myStream ? (
-            <figure className="bg-btn-hover rounded-md p-2 w-1/2 max-w-[350px]">
-              <Player stream={myStream} user="you" />
-              <SetupMedia stream={myStream} />
-            </figure>
-          ) : (
-            <p className="text-center w-1/2 max-w-[100px]">camera setup</p>
-          )}
+          <figure className={`${myStream && "bg-btn-hover"} rounded-md p-2 w-1/2 max-w-[350px]`}>
+            {myStream ? (
+              <>
+                <Player stream={myStream} user="you" />
+                <SetupMedia stream={myStream} />
+              </>
+            ) : (
+              <p className="w-fit mx-auto max-w-[100px]">camera setup</p>
+            )}
+          </figure>
         </>
       ) : (
         <Loading />

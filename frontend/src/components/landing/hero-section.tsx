@@ -12,10 +12,10 @@ export default function HeroSection() {
   return (
     <>
       <HeroHeader />
-      <main className="overflow-x-hidden">
+      <main>
         <section>
           <div className="pb-24 pt-12 md:pb-32 lg:pb-56 lg:pt-44">
-            <div className="relative mx-auto flex w-[90%] max-w-[1400px]  flex-col px-6 lg:block">
+            <div className="mx-auto flex items-center w-[90%] max-w-[1400px] px-6 ">
               <div className="mx-auto max-w-lg text-center lg:ml-0 lg:w-1/2 lg:text-left">
                 <h1 className="font-bold mt-8 max-w-2xl text-balance text-5xl md:text-6xl lg:mt-16 xl:text-7xl">
                   Pod.
@@ -36,35 +36,36 @@ export default function HeroSection() {
                     }}
                   >
                     <p className="text">Start Recording</p>
-                    <span >
+                    <span>
                       <LuMoveRight className="icon-md text-bg-sec" />
                       <FaMicrophoneAlt className="icon-sm text-bg-sec" />
                     </span>
                   </button>
 
-                  <Button variant={"default"}
-                    className="px-5 py-2 rounded-sm ">
+                  <Button variant={"default"} className="px-5 py-2 rounded-sm ">
                     Watch a demo
                   </Button>
                 </figure>
               </div>
-              <img
-                className="-z-10 order-first ml-auto h-56 w-full object-cover invert sm:h-96 lg:absolute lg:inset-0 lg:-right-20 lg:-top-96 lg:order-last lg:h-max lg:w-2/3 lg:object-contain dark:mix-blend-lighten dark:invert-0"
-                src="https://ik.imagekit.io/lrigu76hy/tailark/abstract-bg.jpg?updatedAt=1745733473768"
-                alt="Abstract Object"
-                height="4000"
-                width="3000"
-              />
+              <div className="size-[30vw] max-w-[450px] max-h-[450px] overflow-hidden rounded-md">
+                <img
+                  className="size-full object-cover"
+                  src="https://ik.imagekit.io/lrigu76hy/tailark/abstract-bg.jpg?updatedAt=1745733473768"
+                  alt="Abstract Object"
+                  height="4000"
+                  width="3000"
+                />
+              </div>
             </div>
           </div>
         </section>
-        <section className="bg-background pb-16 md:pb-32">
+        <section className="pb-16 md:pb-32">
           <div className="group relative m-auto px-6">
-            <div className="flex flex-col items-center md:flex-row">
+            <div className="flex flex-col items-center md:flex-row ">
               <div className="md:max-w-44 md:border-r md:pr-6">
                 <p className="text-end text-sm">Powering the best teams</p>
               </div>
-              <div className="relative py-6 w-[90%]">
+              <div className="relative py-6 w-[90%] ">
                 <InfiniteSlider speedOnHover={20} speed={40} gap={110}>
                   <div className="flex">
                     <img
@@ -145,7 +146,7 @@ export default function HeroSection() {
                 <div className="bg-linear-to-r from-background absolute inset-y-0 left-0 w-20"></div>
                 <div className="bg-linear-to-l from-background absolute inset-y-0 right-0 w-20"></div>
                 <ProgressiveBlur
-                  className="pointer-events-none absolute left-0 top-0 h-full w-20"
+                  className="pointer-events-none absolute left-0 top-0 h-full w-20 "
                   direction="left"
                   blurIntensity={1}
                 />

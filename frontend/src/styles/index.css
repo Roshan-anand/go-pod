@@ -21,6 +21,8 @@
   --color-btn-sec: var(--btn-sec);
   --color-accent: var(--accent);
   --color-btn-hover: var(--btn-hover);
+
+  --breakpoint-lx: 1200px;
 }
 
 .grad-one {

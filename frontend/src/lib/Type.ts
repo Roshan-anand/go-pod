@@ -40,3 +40,10 @@ export type RecordingData = Record<
     uploadChunks: CompletedPart[];
   }
 >;
+
+export type RecordsData = {
+  url: string;
+  createdAt: string;
+  name: string;
+  device: string;
+};
