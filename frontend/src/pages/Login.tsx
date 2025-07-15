@@ -1,9 +1,9 @@
 import { useRef } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate, useSearch } from "@tanstack/react-router";
-import { Button } from "@/components/ui/button";
 import { setDetails } from "@/providers/redux/slice/user";
 import { toast } from "react-toastify";
+import "@/styles/login.css";
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -41,32 +41,36 @@ const Login = () => {
     <main className="h-screen flex items-center justify-center">
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col gap-4 min-w-[300px]"
+        className="flex flex-col items-center gap-4 min-w-[300px] max-w-[600px] w-1/2"
       >
-        <header>
-          <h1 className="text-2xl font-bold mb-2">Login</h1>
+        <header className="w-full">
+          <h1 className="text-2xl font-bold mb-2">Login.</h1>
         </header>
-        <label htmlFor="email">Email</label>
-        <input
-          id="email"
-          type="email"
-          ref={emailInp}
-          required
-          className="border rounded px-2 py-1"
-        />
-        <label htmlFor="name">Username</label>
-        <input
-          id="name"
-          type="text"
-          ref={nameInp}
-          required
-          className="border rounded px-2 py-1"
-        />
-        <footer>
-          <Button type="submit" className="w-full">
-            Login
-          </Button>
-        </footer>
+
+        <div className="textInputWrapper">
+          <input
+            id="email"
+            type="email"
+            ref={emailInp}
+            placeholder="Email"
+            required
+            className="textInput"
+          />
+        </div>
+
+        <div className="textInputWrapper">
+          <input
+            id="name"
+            type="text"
+            ref={nameInp}
+            placeholder="Username"
+            required
+            className="textInput"
+          />
+        </div>
+        <button type="submit" className="anime">
+          Login
+        </button>
       </form>
     </main>
   );

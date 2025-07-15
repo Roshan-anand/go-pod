@@ -1,0 +1,21 @@
+# this compose file is for swarm mode deployment
+services:
+  server:
+    image: gopod-s
+    ports:
+      - 8080:8080
+    env_file:
+      - ./backend/.env
+    networks:
+      - gopod_net
+  client:
+    image: gopod-c
+    ports:
+      - 5173:80
+    depends_on:
+      - server
+    networks:
+      - gopod_net
+networks:
+  gopod_net:
+    driver: overlay

@@ -192,17 +192,17 @@ const ControlerScreenShare = () => {
       audio: true,
     });
 
-    const streans: StreamT = {
+    const screen: StreamT = {
       video: new MediaStream([stream.getVideoTracks()[0]]),
       audio: new MediaStream(),
       name: "you",
     };
 
     if (stream.getAudioTracks()[0])
-      streans.audio = new MediaStream([stream.getAudioTracks()[0]]);
+      screen.audio = new MediaStream([stream.getAudioTracks()[0]]);
 
-    setMyScreen(streans);
-    if (isRecording) startRecording(streans, "screen");
+    setMyScreen(screen);
+    if (isRecording) startRecording(screen, "screen");
     stream.getVideoTracks()[0].addEventListener("ended", () => {
       setMyScreen(null);
       stopRecording("screen");

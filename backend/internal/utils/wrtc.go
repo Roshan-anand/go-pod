@@ -12,15 +12,18 @@ import (
 // to generate a new ICE configuration
 // this function uses Twilio's API to get the ICE servers and credentials
 func GetICEconfig() webrtc.ICEServer {
+	Username := os.Getenv("TWILIO_ACCOUNT_SID")
+	Password := os.Getenv("TWILIO_AUTH_TOKEN")
 
 	client := twilio.NewRestClientWithParams(twilio.ClientParams{
-		Username: os.Getenv("TWILIO_ACCOUNT_SID"),
-		Password: os.Getenv("TWILIO_AUTH_TOKEN"),
+		Username: Username,
+		Password: Password,
 	})
 	time := 360000
 	params := &api.CreateTokenParams{
 		Ttl: &time,
 	}
+
 	token, err := client.Api.CreateToken(params)
 	if err != nil {
 		fmt.Println("Failed to create token:", err)

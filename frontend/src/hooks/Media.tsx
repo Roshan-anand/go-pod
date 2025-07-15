@@ -26,6 +26,7 @@ const useMedia = () => {
     setMyStream({
       audio: new MediaStream([media.getAudioTracks()[0]]),
       video: new MediaStream([media.getVideoTracks()[0]]),
+      name: "you",
     });
   };
 

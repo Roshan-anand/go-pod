@@ -19,33 +19,34 @@ prod-client :
 	pnpm build && \
 	pnpm preview --port 5173 
 
-# to containerize the server 
-dkr-server :
-	@clear && \
-	cd backend && \
-	sudo docker image rm gopod-s && \
-	sudo docker build -t gopod-s .
-
-# to containerize the client
-dkr-client :
-	@clear && \
-	cd frontend && \
-	sudo docker image rm gopod-c && \
-	sudo docker build -t gopod-c .
-
 # to run build docker compose
-compose-build:
+build:
 	@clear && \
-	( sudo docker image inspect gopod-s >/dev/null 2>&1 && sudo docker rmi gopod-s || true ) && \
-	( sudo docker image inspect gopod-c >/dev/null 2>&1 && sudo docker rmi gopod-c || true ) && \
-	sudo docker compose up -d --build
+	( docker image inspect gopod-s >/dev/null 2>&1 && docker rmi gopod-s || true ) && \
+	( docker image inspect gopod-c >/dev/null 2>&1 && docker rmi gopod-c || true ) && \
+	docker compose -f compose.build.yaml build
 
-# to run docker compose
-compose :
+# to run production test docker compose
+up :
 	@clear && \
-	sudo docker compose up -d
+	docker compose -f compose.yaml up
 
-# to stop docker compose
+# to stop production test docker compose
 down :
 	@clear && \
-	sudo docker compose down
+	docker compose -f compose.yaml down
+
+stack :
+	@clear && \
+	docker stack deploy -c compose.swarm.yaml gopodstack
+
+# to run containers in watch mode
+watch :
+	@clear && \
+	( docker image inspect gopoddev-s >/dev/null 2>&1 && docker rmi gopoddev-s || true ) && \
+	( docker image inspect gopoddev-c >/dev/null 2>&1 && docker rmi gopoddev-c || true ) && \
+	docker compose -f compose.watch.yaml up --watch --build
+
+watch-down :
+	@clear && \
+	docker compose -f compose.watch.yaml down

@@ -12,9 +12,9 @@ const buttonVariants = cva(
         default: "hover:bg-btn-prime",
         prime: "bg-btn-prime hover:bg-btn-hover",
         accent: "bg-accent outline-2 -outline-offset-4 hover:outline-offset-0",
-        action: "bg-btn-sec hover:scale-[0.9] text-bg-prime",
+        action: "bg-btn-sec hover:scale-[0.95] text-bg-prime",
         destructive:
-          "bg-[#251017] text-[#d43759] hover:bg-red-600 hover:text-txt-prime",
+          "bg-[#251017] text-[#d43759] hover:bg-red-600 transition-all ease-in hover:text-txt-prime",
         link: "text-primary underline-offset-4 hover:underline hover:text-blue-300",
       },
     },

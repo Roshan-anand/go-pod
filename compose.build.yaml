@@ -1,0 +1,32 @@
+#this compose file is for production build and test purposes
+services:
+  server:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: gopod-s
+    env_file:
+      - ./backend/.env
+    ports:
+      - "8000:8000"
+    networks:
+      - gopod_net
+  client:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_BACKEND_URL=${VITE_BACKEND_URL}
+        - VITE_S3_BUCKET_NAME=${VITE_S3_BUCKET_NAME}
+        - VITE_S3_ACCESS_KEY=${VITE_S3_ACCESS_KEY}
+        - VITE_S3_SECRET_ACCESS_KEY=${VITE_S3_SECRET_ACCESS_KEY}
+    image: gopod-c
+    ports:
+      - "5173:80"
+    depends_on:
+      - server
+    networks:
+      - gopod_net
+networks:
+  gopod_net:
+    driver: bridge
